@@ -1,6 +1,8 @@
+extern crate rand;
 mod console;
 mod grid;
 mod shape;
+mod tetris;
 
 use crate::console::Color::{self, Blue, White, Red, Yellow, Magenta, Cyan, Green, Black, DefaultColor};
 use crate::console::{reset, cursor_up};

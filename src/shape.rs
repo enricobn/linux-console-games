@@ -15,6 +15,7 @@ impl Point {
     }
 }
 
+#[derive(Clone)]
 pub struct Shape {
     points: Vec<Point>,
     color: Color
@@ -93,12 +94,7 @@ impl Shape {
         let points = self.points.to_vec().into_iter().map(|point| {
             let distance = ((point.x * point.x + point.y * point.y) as f32).sqrt();
             let angle = (point.y as f32).atan2(point.x as f32) + ang;
-            let point1 = Point { x: (distance * angle.cos()).round() as i8, y: (distance * angle.sin()).round() as i8 };
-            println!("distance={} angle={}", distance, angle);
-            println!("{:?}", point);
-            println!("{:?}", point1);
-            println!();
-            point1
+            Point { x: (distance * angle.cos()).round() as i8, y: (distance * angle.sin()).round() as i8 }
         }).collect::<Vec<_>>();
         Shape {points, color: self.color}
     }
