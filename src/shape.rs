@@ -5,13 +5,17 @@ use std::f32::consts::PI;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Point {
-    x: i8,
-    y: i8,
+    pub x: i8,
+    pub y: i8,
 }
 
 impl Point {
     pub fn new(x: i8, y: i8) -> Point {
         Point { x, y }
+    }
+
+    pub fn down(&self) -> Point {
+        Point::new(self.x, self.y + 1)
     }
 }
 
@@ -80,6 +84,11 @@ impl Shape {
     pub fn print(&self, grid: Grid, x: u8, y: u8) -> Grid {
         self.points.to_vec().into_iter()
             .fold(grid, |prev, point| prev.set((x as i8 + point.x) as u8, (y as i8 + point.y) as u8, self.color))
+    }
+
+    pub fn clear(&self, grid: Grid, x: u8, y: u8) -> Grid {
+        self.points.to_vec().into_iter()
+            .fold(grid, |prev, point| prev.set((x as i8 + point.x) as u8, (y as i8 + point.y) as u8, Color::DefaultColor))
     }
 
     pub fn rotate(&self) -> Shape {

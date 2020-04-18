@@ -1,13 +1,13 @@
 use crate::console::{Color, reset};
 
+#[derive(Clone)]
 pub struct Grid {
     width: u8,
     height: u8,
-    cells: Vec<Vec<Color>>
+    cells: Vec<Vec<Color>>,
 }
 
 impl Grid {
-
     pub fn new(width: u8, height: u8) -> Grid {
         let mut cells: Vec<Vec<Color>> = vec![];
 
@@ -18,7 +18,7 @@ impl Grid {
             }
             cells.push(row);
         }
-        Grid {width, height, cells}
+        Grid { width, height, cells }
     }
 
     pub fn set(&self, x: u8, y: u8, color: Color) -> Grid {
@@ -33,14 +33,33 @@ impl Grid {
         Grid { width: self.width, height: self.height, cells: new_cells }
     }
 
-    pub fn print(&self) {
+    pub fn print(&self, border: bool) {
+        if border { self.print_row(); }
+
         for row in &self.cells {
+            Color::White.background();
+            print!(" ");
             for color in row {
                 color.background();
                 print!("  ");
             }
+            if border { Color::White.background(); }
+            print!(" ");
             reset();
-            println!()
+            println!();
         }
+
+        if border { self.print_row(); }
+    }
+
+    fn print_row(&self) {
+        Color::White.background();
+        print!(" ");
+        for _ in 0..self.width {
+            print!("  ");
+        }
+        print!(" ");
+        reset();
+        println!();
     }
 }

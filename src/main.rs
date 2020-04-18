@@ -8,13 +8,20 @@ use crate::console::Color::{self, Blue, White, Red, Yellow, Magenta, Cyan, Green
 use crate::console::{reset, cursor_up};
 use crate::grid::Grid;
 use crate::shape::Shape;
+use crate::tetris::Tetris;
 
 fn main() {
 
-    let grid = Grid::new(10, 10);
+    let tetris = Tetris::new(10, 10);
 
-    let new_grid = Shape::l().rotate().print(grid, 3, 1);
+    tetris.print();
 
-    new_grid.print();
+    let tetris_next = tetris.next();
+
+    tetris_next.print();
+
+    let tetris_next1 = tetris_next.next();
+
+    tetris_next1.print();
 
 }
