@@ -27,7 +27,7 @@ impl Grid {
             .map(|(iy, row)|
                 row.into_iter().enumerate()
                     .map(|(ix, v_color)|
-                        if iy == y.into() && ix == x.into() { color } else { v_color }
+                        if iy == y.into() && ix == x.into() { color.clone() } else { v_color }
                     ).collect::<Vec<_>>()
             ).collect::<Vec<_>>();
         Grid { width: self.width, height: self.height, cells: new_cells }
