@@ -11,9 +11,7 @@ fn main() {
 
     let grid = Grid::new(10, 10);
 
-    let new_grid = Shape::l().print(grid, 3, 0);
-
-    //let new_grid = grid.set(5, 5, Color::Magenta);
+    let new_grid = Shape::l().rotate().print(grid, 3, 1);
 
     new_grid.print();
 

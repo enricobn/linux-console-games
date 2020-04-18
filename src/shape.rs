@@ -1,7 +1,9 @@
 use crate::console::Color;
 use crate::grid::Grid;
+use std::f32::consts::PI;
 
-#[derive(Copy, Clone)]
+
+#[derive(Copy, Clone, Debug)]
 pub struct Point {
     x: i8,
     y: i8,
@@ -77,6 +79,28 @@ impl Shape {
     pub fn print(&self, grid: Grid, x: u8, y: u8) -> Grid {
         self.points.to_vec().into_iter()
             .fold(grid, |prev, point| prev.set((x as i8 + point.x) as u8, (y as i8 + point.y) as u8, self.color))
+    }
+
+    pub fn rotate(&self) -> Shape {
+        self.rotate_by_angle(PI / 2.0)
+    }
+
+    pub fn rotate_left(&self) -> Shape {
+        self.rotate_by_angle(-PI / 2.0)
+    }
+
+    fn rotate_by_angle(&self, ang: f32) -> Shape {
+        let points = self.points.to_vec().into_iter().map(|point| {
+            let distance = ((point.x * point.x + point.y * point.y) as f32).sqrt();
+            let angle = (point.y as f32).atan2(point.x as f32) + ang;
+            let point1 = Point { x: (distance * angle.cos()).round() as i8, y: (distance * angle.sin()).round() as i8 };
+            println!("distance={} angle={}", distance, angle);
+            println!("{:?}", point);
+            println!("{:?}", point1);
+            println!();
+            point1
+        }).collect::<Vec<_>>();
+        Shape {points, color: self.color}
     }
 
 }
