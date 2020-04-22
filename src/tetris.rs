@@ -2,6 +2,8 @@ use rand::prelude::*;
 
 use crate::grid::Grid;
 use crate::shape::{Point, Shape};
+use std::io::{Stdout, Write};
+use termion::raw::RawTerminal;
 
 const STATE_INIT: u8 = 0;
 const STATE_NORMAL: u8 = 1;
@@ -67,7 +69,7 @@ impl Tetris {
         }
     }
 
-    pub fn print(&self) {
-        self.grid.print(true)
+    pub fn print<W: Write>(&self, term: &mut W) {
+        self.grid.print(term, true)
     }
 }

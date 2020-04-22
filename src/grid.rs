@@ -1,4 +1,7 @@
-use crate::console::{Color, reset};
+use std::io::{Stdout, Write};
+use termion::color;
+use termion::raw::RawTerminal;
+use crate::console::Color;
 
 #[derive(Clone)]
 pub struct Grid {
@@ -33,33 +36,27 @@ impl Grid {
         Grid { width: self.width, height: self.height, cells: new_cells }
     }
 
-    pub fn print(&self, border: bool) {
-        if border { self.print_row(); }
+    pub fn print<W: Write>(&self, term: &mut W, border: bool) {
+        if border { self.print_row(term); }
 
         for row in &self.cells {
-            Color::White.background();
-            print!(" ");
+            write!(term, "{} ", color::Bg(color::White)).unwrap();
             for color in row {
-                color.background();
-                print!("  ");
+                write!(term, "{}  ", color::Bg(*color));
             }
-            if border { Color::White.background(); }
-            print!(" ");
-            reset();
-            println!();
+            if border { write!(term, "{} {}\n\r", color::Bg(color::White), termion::style::Reset).unwrap(); }
         }
 
-        if border { self.print_row(); }
+        if border { self.print_row(term); }
+
+        term.flush().unwrap();
     }
 
-    fn print_row(&self) {
-        Color::White.background();
-        print!(" ");
+    fn print_row<W: Write>(&self, term: &mut W) {
+        write!(term, "{} ", color::Bg(color::White)).unwrap();
         for _ in 0..self.width {
-            print!("  ");
+            write!(term, "  ").unwrap();
         }
-        print!(" ");
-        reset();
-        println!();
+        write!(term, " {}\n\r", termion::style::Reset).unwrap();
     }
 }
