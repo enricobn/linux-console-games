@@ -75,24 +75,35 @@ impl Tetris {
                 next_shape: self.next_shape.clone(),
             }
         } else if self.state == STATE_NORMAL {
-            // TODO collision
-            let mut grid = self.current_piece.clear(self.grid.clone());
+            let grid = self.current_piece.clear(self.grid.clone());
             let piece = self.current_piece.down();
-            Tetris {
-                state: STATE_NORMAL,
-                current_piece: piece.clone(),
-                grid: piece.print(grid),
-                next_shape: self.next_shape.clone(),
+            let points = piece.shape.get_points(piece.position.x, piece.position.y);
+            if grid.any_out(&points) || grid.any_occupied(&points) {
+                Tetris {
+                    state: STATE_NEW_PIECE,
+                    current_piece: piece.clone(),
+                    grid: self.grid.clone(),
+                    next_shape: self.next_shape.clone(),
+                }
+            } else {
+                Tetris {
+                    state: STATE_NORMAL,
+                    current_piece: piece.clone(),
+                    grid: piece.print(grid),
+                    next_shape: self.next_shape.clone(),
+                }
             }
         } else {
-            // TODO
-            let mut grid = self.current_piece.clear(self.grid.clone());
-            let piece = self.current_piece.down();
+            let current_piece = Piece {
+                shape: self.next_shape.clone(),
+                position: Point::new(self.grid.width as i8 / 2, 1),
+            };
+            let next_shape = Tetris::random_shape();
             Tetris {
                 state: STATE_NORMAL,
-                current_piece: piece.clone(),
-                grid: piece.print(grid),
-                next_shape: self.next_shape.clone(),
+                current_piece,
+                grid: self.grid.clone(),
+                next_shape,
             }
         }
     }
@@ -163,5 +174,4 @@ impl Tetris {
     pub fn print<W: Write>(&self, term: &mut W) {
         self.grid.print(term, true)
     }
-
 }

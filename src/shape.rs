@@ -113,6 +113,11 @@ impl Shape {
         self.rotate_by_angle(-PI / 2.0)
     }
 
+    pub fn get_points(&self, x: i8, y: i8) -> Vec<Point> {
+        self.points.to_vec().into_iter()
+            .map(|point| Point {x: x + point.x, y: y + point.y}).collect()
+    }
+
     fn rotate_by_angle(&self, ang: f32) -> Shape {
         let points = self.points.to_vec().into_iter().map(|point| {
             let distance = ((point.x * point.x + point.y * point.y) as f32).sqrt();

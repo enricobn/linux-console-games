@@ -1,7 +1,7 @@
 use std::fmt::{Formatter, Error};
 use termion::color;
 
-#[derive(Clone,Copy, Debug)]
+#[derive(Clone,Copy, Debug, Eq, PartialEq)]
 pub enum Color {
     Black,
     Red,

@@ -2,11 +2,12 @@ use std::io::{Stdout, Write};
 use termion::color;
 use termion::raw::RawTerminal;
 use crate::console::Color;
+use crate::shape::Point;
 
 #[derive(Clone)]
 pub struct Grid {
-    width: u8,
-    height: u8,
+    pub width: u8,
+    pub height: u8,
     cells: Vec<Vec<Color>>,
 }
 
@@ -50,6 +51,18 @@ impl Grid {
         if border { self.print_row(term); }
 
         term.flush().unwrap();
+    }
+
+    pub fn any_occupied(&self, points: &Vec<Point>) -> bool {
+        points.into_iter().any(|point| {
+            self.cells[point.y as usize][point.x as usize] != Color::DefaultColor
+        })
+    }
+
+    pub fn any_out(&self, points: &Vec<Point>) -> bool {
+        points.into_iter().any(|point| {
+            point.x >= self.width as i8 || point.y >= self.height as i8 || point.x < 0 || point.y < 0
+        })
     }
 
     fn print_row<W: Write>(&self, term: &mut W) {
