@@ -1,9 +1,10 @@
+use std::io::{Stdout, Write};
+
 use rand::prelude::*;
+use termion::raw::RawTerminal;
 
 use crate::grid::Grid;
 use crate::shape::{Point, Shape};
-use std::io::{Stdout, Write};
-use termion::raw::RawTerminal;
 
 const STATE_INIT: u8 = 0;
 const STATE_NORMAL: u8 = 1;
@@ -27,8 +28,25 @@ impl Piece {
     pub fn down(&self) -> Piece {
         Piece { shape: self.shape.clone(), position: self.position.down() }
     }
+
+    pub fn right(&self) -> Piece {
+        Piece { shape: self.shape.clone(), position: self.position.right() }
+    }
+
+    pub fn left(&self) -> Piece {
+        Piece { shape: self.shape.clone(), position: self.position.left() }
+    }
+
+    pub fn rotate_left(&self) -> Piece {
+        Piece { shape: self.shape.rotate_left(), position: self.position.clone() }
+    }
+
+    pub fn rotate_right(&self) -> Piece {
+        Piece { shape: self.shape.rotate_left(), position: self.position.clone() }
+    }
 }
 
+#[derive(Clone)]
 pub struct Tetris {
     state: u8,
     grid: Grid,
@@ -60,16 +78,90 @@ impl Tetris {
             // TODO collision
             let mut grid = self.current_piece.clear(self.grid.clone());
             let piece = self.current_piece.down();
-            Tetris { state: STATE_NORMAL, current_piece: piece.clone(), grid: piece.print(grid), next_shape: self.next_shape.clone() }
+            Tetris {
+                state: STATE_NORMAL,
+                current_piece: piece.clone(),
+                grid: piece.print(grid),
+                next_shape: self.next_shape.clone(),
+            }
         } else {
             // TODO
             let mut grid = self.current_piece.clear(self.grid.clone());
             let piece = self.current_piece.down();
-            Tetris { state: STATE_NORMAL, current_piece: piece.clone(), grid: piece.print(grid), next_shape: self.next_shape.clone() }
+            Tetris {
+                state: STATE_NORMAL,
+                current_piece: piece.clone(),
+                grid: piece.print(grid),
+                next_shape: self.next_shape.clone(),
+            }
+        }
+    }
+
+    pub fn right(&self) -> Tetris {
+        if self.state == STATE_NORMAL {
+            // TODO collision
+            let mut grid = self.current_piece.clear(self.grid.clone());
+            let piece = self.current_piece.right();
+            Tetris {
+                state: STATE_NORMAL,
+                current_piece: piece.clone(),
+                grid: piece.print(grid),
+                next_shape: self.next_shape.clone(),
+            }
+        } else {
+            (*self).clone()
+        }
+    }
+    pub fn left(&self) -> Tetris {
+        if self.state == STATE_NORMAL {
+            // TODO collision
+            let mut grid = self.current_piece.clear(self.grid.clone());
+            let piece = self.current_piece.left();
+            Tetris {
+                state: STATE_NORMAL,
+                current_piece: piece.clone(),
+                grid: piece.print(grid),
+                next_shape: self.next_shape.clone(),
+            }
+        } else {
+            (*self).clone()
+        }
+    }
+
+    pub fn rotate_left(&self) -> Tetris {
+        if self.state == STATE_NORMAL {
+            // TODO collision
+            let mut grid = self.current_piece.clear(self.grid.clone());
+            let piece = self.current_piece.rotate_left();
+            Tetris {
+                state: STATE_NORMAL,
+                current_piece: piece.clone(),
+                grid: piece.print(grid),
+                next_shape: self.next_shape.clone(),
+            }
+        } else {
+            (*self).clone()
+        }
+    }
+
+    pub fn rotate_right(&self) -> Tetris {
+        if self.state == STATE_NORMAL {
+            // TODO collision
+            let mut grid = self.current_piece.clear(self.grid.clone());
+            let piece = self.current_piece.rotate_right();
+            Tetris {
+                state: STATE_NORMAL,
+                current_piece: piece.clone(),
+                grid: piece.print(grid),
+                next_shape: self.next_shape.clone(),
+            }
+        } else {
+            (*self).clone()
         }
     }
 
     pub fn print<W: Write>(&self, term: &mut W) {
         self.grid.print(term, true)
     }
+
 }

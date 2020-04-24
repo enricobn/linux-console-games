@@ -2,6 +2,7 @@ extern crate rand;
 extern crate termion;
 
 use std::io::{stdin, stdout, Write};
+use std::io::Read;
 
 use termion::event::Key;
 use termion::input::TermRead;
@@ -12,6 +13,9 @@ use crate::console::Color::{self, Black, Blue, Cyan, DefaultColor, Green, Magent
 use crate::grid::Grid;
 use crate::shape::Shape;
 use crate::tetris::Tetris;
+use termion::async_stdin;
+use std::thread;
+use std::time::Duration;
 
 mod console;
 mod grid;
@@ -29,26 +33,52 @@ fn main() {
         .unwrap();
     stdout.flush().unwrap();
 
-    let mut tetris = Tetris::new(10, 10);
+    let mut tetris = Tetris::new(10, 20);
 
     goto(&mut stdout, 1, 2);
 
     tetris.print(&mut stdout);
 
-    let stdin = stdin();
+    let mut stdin = async_stdin().bytes();
 
-    for c in stdin.keys() {
-        match c.unwrap() {
-            Key::Char('n') => {
-                tetris = tetris.next();
-
-                goto(&mut stdout, 1, 2);
-                tetris.print(&mut stdout)
-            }
-            Key::Char('q') => break,
-            _ => {}
+    loop {
+        let b = stdin.next();
+        if let Some(Ok(b'q')) = b {
+            break;
         }
+
+        let mut key_pressed = false;
+
+        if let Some(Ok(27)) = b {
+            let b = stdin.next();
+            if let Some(Ok(91)) = b {
+                let b = stdin.next();
+                if let Some(Ok(68)) = b { // left
+                    key_pressed = true;
+                    tetris = tetris.left();
+                } else if let Some(Ok(67)) = b { // right
+                    key_pressed = false;
+                    tetris = tetris.right();
+                } else if let Some(Ok(66)) = b { // rotate left
+                    key_pressed = false;
+                    tetris = tetris.rotate_left();
+                } else if let Some(Ok(65)) = b { // rotate right
+                    key_pressed = false;
+                    tetris = tetris.rotate_right();
+                }
+            }
+        }
+
+        //if !key_pressed {
+            tetris = tetris.next();
+        //}
+
+        goto(&mut stdout, 1, 2);
+        tetris.print(&mut stdout);
+
+        thread::sleep(Duration::from_millis(500));
     }
+
     write!(stdout,
            "{}",
            termion::cursor::Show)

@@ -17,6 +17,14 @@ impl Point {
     pub fn down(&self) -> Point {
         Point::new(self.x, self.y + 1)
     }
+
+    pub fn right(&self) -> Point {
+        Point::new(self.x + 1, self.y)
+    }
+
+    pub fn left(&self) -> Point {
+        Point::new(self.x - 1, self.y)
+    }
 }
 
 #[derive(Clone)]
@@ -111,6 +119,7 @@ impl Shape {
             let angle = (point.y as f32).atan2(point.x as f32) + ang;
             Point { x: (distance * angle.cos()).round() as i8, y: (distance * angle.sin()).round() as i8 }
         }).collect::<Vec<_>>();
+
         Shape { points, color: self.color.clone() }
     }
 }
