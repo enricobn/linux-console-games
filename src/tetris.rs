@@ -5,6 +5,7 @@ use termion::raw::RawTerminal;
 
 use crate::grid::Grid;
 use crate::shape::{Point, Shape};
+use std::borrow::Borrow;
 
 const STATE_INIT: u8 = 0;
 const STATE_NORMAL: u8 = 1;
@@ -77,14 +78,14 @@ impl Tetris {
         } else if self.state == STATE_NORMAL {
             let grid = self.current_piece.clear(self.grid.clone());
             let piece = self.current_piece.down();
-            let points = piece.shape.get_points(piece.position.x, piece.position.y);
+            let points = piece.shape.to_points(piece.position.x, piece.position.y);
             if grid.any_out(&points) || grid.any_occupied(&points) {
                 Tetris {
                     state: STATE_NEW_PIECE,
                     current_piece: piece.clone(),
                     grid: self.grid.clone(),
                     next_shape: self.next_shape.clone(),
-                }
+                }.next()
             } else {
                 Tetris {
                     state: STATE_NORMAL,
@@ -101,8 +102,8 @@ impl Tetris {
             let next_shape = Tetris::random_shape();
             Tetris {
                 state: STATE_NORMAL,
-                current_piece,
-                grid: self.grid.clone(),
+                current_piece: current_piece.clone(),
+                grid: current_piece.print(self.grid.clone()),
                 next_shape,
             }
         }
@@ -123,6 +124,7 @@ impl Tetris {
             (*self).clone()
         }
     }
+
     pub fn left(&self) -> Tetris {
         if self.state == STATE_NORMAL {
             // TODO collision
@@ -168,6 +170,24 @@ impl Tetris {
             }
         } else {
             (*self).clone()
+        }
+    }
+
+    pub fn fall(&self) -> Tetris {
+        let mut piece = self.current_piece.clone();
+        let grid = piece.clear(self.grid.clone());
+        loop {
+            let piece_down = piece.down();
+            let points = piece_down.shape.to_points(piece_down.position.x, piece_down.position.y);
+            if grid.any_out(&points) || grid.any_occupied(&points) {
+                return Tetris {
+                    state: STATE_NEW_PIECE,
+                    current_piece: piece.clone(),
+                    grid: piece.print(grid),
+                    next_shape: self.next_shape.clone(),
+                }
+            }
+            piece = piece_down;
         }
     }
 

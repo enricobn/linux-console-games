@@ -113,7 +113,7 @@ impl Shape {
         self.rotate_by_angle(-PI / 2.0)
     }
 
-    pub fn get_points(&self, x: i8, y: i8) -> Vec<Point> {
+    pub fn to_points(&self, x: i8, y: i8) -> Vec<Point> {
         self.points.to_vec().into_iter()
             .map(|point| Point {x: x + point.x, y: y + point.y}).collect()
     }

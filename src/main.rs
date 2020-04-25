@@ -49,7 +49,10 @@ fn main() {
 
         let mut key_pressed = false;
 
-        if let Some(Ok(27)) = b {
+        if let Some(Ok(b' ')) = b {
+            key_pressed = true;
+            tetris = tetris.fall();
+        } else if let Some(Ok(27)) = b {
             let b = stdin.next();
             if let Some(Ok(91)) = b {
                 let b = stdin.next();
