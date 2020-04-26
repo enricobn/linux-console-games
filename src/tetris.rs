@@ -110,69 +110,25 @@ impl Tetris {
     }
 
     pub fn right(&self) -> Tetris {
-        if self.state == STATE_NORMAL {
-            let piece = self.current_piece.right();
-            let points = piece.shape.to_points(piece.position.x, piece.position.y);
-            if self.grid.any_horizontal_out(&points) {
-                (*self).clone()
-            } else {
-                let mut grid = self.current_piece.clear(self.grid.clone());
-                Tetris {
-                    state: STATE_NORMAL,
-                    current_piece: piece.clone(),
-                    grid: piece.print(grid),
-                    next_shape: self.next_shape.clone(),
-                }
-            }
-        } else {
-            (*self).clone()
-        }
+        self.mv(|piece| piece.right())
     }
 
     pub fn left(&self) -> Tetris {
-        if self.state == STATE_NORMAL {
-            let piece = self.current_piece.left();
-            let points = piece.shape.to_points(piece.position.x, piece.position.y);
-            if self.grid.any_horizontal_out(&points) {
-                (*self).clone()
-            } else {
-                let grid = self.current_piece.clear(self.grid.clone());
-                Tetris {
-                    state: STATE_NORMAL,
-                    current_piece: piece.clone(),
-                    grid: piece.print(grid),
-                    next_shape: self.next_shape.clone(),
-                }
-            }
-        } else {
-            (*self).clone()
-        }
+        self.mv(|piece| piece.left())
     }
 
     pub fn rotate_left(&self) -> Tetris {
-        if self.state == STATE_NORMAL {
-            let grid = self.current_piece.clear(self.grid.clone());
-            let piece = self.current_piece.rotate_left();
-            let points = piece.shape.to_points(piece.position.x, piece.position.y);
-            if grid.any_out(&points) || grid.any_occupied(&points) {
-                (*self).clone()
-            } else {
-                Tetris {
-                    state: STATE_NORMAL,
-                    current_piece: piece.clone(),
-                    grid: piece.print(grid),
-                    next_shape: self.next_shape.clone(),
-                }
-            }
-        } else {
-            (*self).clone()
-        }
+        self.mv(|piece| piece.rotate_left())
     }
 
     pub fn rotate_right(&self) -> Tetris {
+        self.mv(|piece| piece.rotate_right())
+    }
+
+    fn mv<F>(&self,f: F) -> Tetris where F: Fn(Piece) -> Piece {
         if self.state == STATE_NORMAL {
             let grid = self.current_piece.clear(self.grid.clone());
-            let piece = self.current_piece.rotate_right();
+            let piece = f(self.current_piece.clone());
             let points = piece.shape.to_points(piece.position.x, piece.position.y);
             if grid.any_out(&points) || grid.any_occupied(&points) {
                 (*self).clone()

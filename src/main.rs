@@ -49,27 +49,36 @@ fn main() {
 
         let mut key_pressed = false;
 
-        if let Some(Ok(b' ')) = b {
-            key_pressed = true;
-            tetris = tetris.fall();
-        } else if let Some(Ok(27)) = b {
-            let b = stdin.next();
-            if let Some(Ok(91)) = b {
+        for i in 0..10 {
+            if let Some(Ok(b' ')) = b {
+                tetris = tetris.fall();
+                key_pressed = true;
+            } else if let Some(Ok(27)) = b {
                 let b = stdin.next();
-                if let Some(Ok(68)) = b { // left
-                    key_pressed = true;
-                    tetris = tetris.left();
-                } else if let Some(Ok(67)) = b { // right
-                    key_pressed = false;
-                    tetris = tetris.right();
-                } else if let Some(Ok(66)) = b { // rotate left
-                    key_pressed = false;
-                    tetris = tetris.rotate_left();
-                } else if let Some(Ok(65)) = b { // rotate right
-                    key_pressed = false;
-                    tetris = tetris.rotate_right();
+                if let Some(Ok(91)) = b {
+                    let b = stdin.next();
+                    if let Some(Ok(68)) = b {
+                        tetris = tetris.left();
+                        key_pressed = true;
+                    } else if let Some(Ok(67)) = b {
+                        tetris = tetris.right();
+                        key_pressed = true;
+                    } else if let Some(Ok(66)) = b {
+                        tetris = tetris.rotate_left();
+                        key_pressed = true;
+                    } else if let Some(Ok(65)) = b {
+                        tetris = tetris.rotate_right();
+                        key_pressed = true;
+                    }
                 }
             }
+
+            if key_pressed {
+                goto(&mut stdout, 1, 2);
+                tetris.print(&mut stdout);
+            }
+
+            thread::sleep(Duration::from_millis(50));
         }
 
         //if !key_pressed {
@@ -78,8 +87,6 @@ fn main() {
 
         goto(&mut stdout, 1, 2);
         tetris.print(&mut stdout);
-
-        thread::sleep(Duration::from_millis(500));
     }
 
     write!(stdout,
