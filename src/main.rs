@@ -41,16 +41,14 @@ fn main() {
 
     let mut stdin = async_stdin().bytes();
 
-    loop {
-        let b = stdin.next();
-        if let Some(Ok(b'q')) = b {
-            break;
-        }
+    'outer: loop {
+        for i in 0..80 {
+            let mut key_pressed = false;
 
-        let mut key_pressed = false;
-
-        for i in 0..10 {
-            if let Some(Ok(b' ')) = b {
+            let b = stdin.next();
+            if let Some(Ok(b'q')) = b {
+                break 'outer;
+            } else if let Some(Ok(b' ')) = b {
                 tetris = tetris.fall();
                 key_pressed = true;
             } else if let Some(Ok(27)) = b {
@@ -74,16 +72,16 @@ fn main() {
             }
 
             if key_pressed {
+                while stdin.next().is_some() { }
+
                 goto(&mut stdout, 1, 2);
                 tetris.print(&mut stdout);
             }
 
-            thread::sleep(Duration::from_millis(50));
+            thread::sleep(Duration::from_millis(5));
         }
 
-        //if !key_pressed {
-            tetris = tetris.next();
-        //}
+        tetris = tetris.next();
 
         goto(&mut stdout, 1, 2);
         tetris.print(&mut stdout);
