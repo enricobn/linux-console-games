@@ -1,14 +1,13 @@
 extern crate rand;
 extern crate termion;
 
-use std::io::{stdin, stdout, Write};
+use std::io::{stdout, Write};
 use std::io::Read;
 
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
-use crate::console::{cursor_up, reset};
 use crate::console::Color::{self, Black, Blue, Cyan, DefaultColor, Green, Magenta, Red, White, Yellow};
 use crate::grid::Grid;
 use crate::shape::Shape;
@@ -42,7 +41,7 @@ fn main() {
     let mut stdin = async_stdin().bytes();
 
     'outer: loop {
-        for i in 0..80 {
+        for i in 0..40 {
             let mut key_pressed = false;
 
             let b = stdin.next();
@@ -78,7 +77,7 @@ fn main() {
                 tetris.print(&mut stdout);
             }
 
-            thread::sleep(Duration::from_millis(5));
+            thread::sleep(Duration::from_millis(10));
         }
 
         tetris = tetris.next();
