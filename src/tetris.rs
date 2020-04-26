@@ -111,14 +111,18 @@ impl Tetris {
 
     pub fn right(&self) -> Tetris {
         if self.state == STATE_NORMAL {
-            // TODO collision
-            let mut grid = self.current_piece.clear(self.grid.clone());
             let piece = self.current_piece.right();
-            Tetris {
-                state: STATE_NORMAL,
-                current_piece: piece.clone(),
-                grid: piece.print(grid),
-                next_shape: self.next_shape.clone(),
+            let points = piece.shape.to_points(piece.position.x, piece.position.y);
+            if self.grid.any_horizontal_out(&points) {
+                (*self).clone()
+            } else {
+                let mut grid = self.current_piece.clear(self.grid.clone());
+                Tetris {
+                    state: STATE_NORMAL,
+                    current_piece: piece.clone(),
+                    grid: piece.print(grid),
+                    next_shape: self.next_shape.clone(),
+                }
             }
         } else {
             (*self).clone()
@@ -127,14 +131,18 @@ impl Tetris {
 
     pub fn left(&self) -> Tetris {
         if self.state == STATE_NORMAL {
-            // TODO collision
-            let mut grid = self.current_piece.clear(self.grid.clone());
             let piece = self.current_piece.left();
-            Tetris {
-                state: STATE_NORMAL,
-                current_piece: piece.clone(),
-                grid: piece.print(grid),
-                next_shape: self.next_shape.clone(),
+            let points = piece.shape.to_points(piece.position.x, piece.position.y);
+            if self.grid.any_horizontal_out(&points) {
+                (*self).clone()
+            } else {
+                let grid = self.current_piece.clear(self.grid.clone());
+                Tetris {
+                    state: STATE_NORMAL,
+                    current_piece: piece.clone(),
+                    grid: piece.print(grid),
+                    next_shape: self.next_shape.clone(),
+                }
             }
         } else {
             (*self).clone()
@@ -143,14 +151,18 @@ impl Tetris {
 
     pub fn rotate_left(&self) -> Tetris {
         if self.state == STATE_NORMAL {
-            // TODO collision
-            let mut grid = self.current_piece.clear(self.grid.clone());
+            let grid = self.current_piece.clear(self.grid.clone());
             let piece = self.current_piece.rotate_left();
-            Tetris {
-                state: STATE_NORMAL,
-                current_piece: piece.clone(),
-                grid: piece.print(grid),
-                next_shape: self.next_shape.clone(),
+            let points = piece.shape.to_points(piece.position.x, piece.position.y);
+            if grid.any_out(&points) || grid.any_occupied(&points) {
+                (*self).clone()
+            } else {
+                Tetris {
+                    state: STATE_NORMAL,
+                    current_piece: piece.clone(),
+                    grid: piece.print(grid),
+                    next_shape: self.next_shape.clone(),
+                }
             }
         } else {
             (*self).clone()
@@ -159,14 +171,18 @@ impl Tetris {
 
     pub fn rotate_right(&self) -> Tetris {
         if self.state == STATE_NORMAL {
-            // TODO collision
-            let mut grid = self.current_piece.clear(self.grid.clone());
+            let grid = self.current_piece.clear(self.grid.clone());
             let piece = self.current_piece.rotate_right();
-            Tetris {
-                state: STATE_NORMAL,
-                current_piece: piece.clone(),
-                grid: piece.print(grid),
-                next_shape: self.next_shape.clone(),
+            let points = piece.shape.to_points(piece.position.x, piece.position.y);
+            if grid.any_out(&points) || grid.any_occupied(&points) {
+                (*self).clone()
+            } else {
+                Tetris {
+                    state: STATE_NORMAL,
+                    current_piece: piece.clone(),
+                    grid: piece.print(grid),
+                    next_shape: self.next_shape.clone(),
+                }
             }
         } else {
             (*self).clone()

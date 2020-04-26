@@ -59,6 +59,18 @@ impl Grid {
         })
     }
 
+    pub fn any_horizontal_out(&self, points: &Vec<Point>) -> bool {
+        points.into_iter().any(|point| {
+            point.x >= self.width as i8 || point.x < 0
+        })
+    }
+
+    pub fn any_vertical_out(&self, points: &Vec<Point>) -> bool {
+        points.into_iter().any(|point| {
+            point.x >= self.width as i8 || point.x < 0
+        })
+    }
+
     pub fn any_out(&self, points: &Vec<Point>) -> bool {
         points.into_iter().any(|point| {
             point.x >= self.width as i8 || point.y >= self.height as i8 || point.x < 0 || point.y < 0
