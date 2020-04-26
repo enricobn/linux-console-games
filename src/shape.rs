@@ -105,7 +105,7 @@ impl Shape {
                                                        Color::DefaultColor))
     }
 
-    pub fn rotate(&self) -> Shape {
+    pub fn rotate_right(&self) -> Shape {
         self.rotate_by_angle(PI / 2.0)
     }
 

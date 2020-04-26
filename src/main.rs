@@ -61,10 +61,10 @@ fn main() {
                     } else if let Some(Ok(67)) = b {
                         tetris = tetris.right();
                         key_pressed = true;
-                    } else if let Some(Ok(66)) = b {
+                    } else if let Some(Ok(65)) = b {
                         tetris = tetris.rotate_left();
                         key_pressed = true;
-                    } else if let Some(Ok(65)) = b {
+                    } else if let Some(Ok(66)) = b {
                         tetris = tetris.rotate_right();
                         key_pressed = true;
                     }

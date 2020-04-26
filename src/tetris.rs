@@ -43,7 +43,7 @@ impl Piece {
     }
 
     pub fn rotate_right(&self) -> Piece {
-        Piece { shape: self.shape.rotate_left(), position: self.position.clone() }
+        Piece { shape: self.shape.rotate_right(), position: self.position.clone() }
     }
 }
 
