@@ -83,7 +83,7 @@ impl Tetris {
                 Tetris {
                     state: STATE_NEW_PIECE,
                     current_piece: piece.clone(),
-                    grid: self.grid.clone(),
+                    grid: self.grid.pack(),
                     next_shape: self.next_shape.clone(),
                 }.next()
             } else {
@@ -155,7 +155,7 @@ impl Tetris {
                 return Tetris {
                     state: STATE_NEW_PIECE,
                     current_piece: piece.clone(),
-                    grid: piece.print(grid),
+                    grid: piece.print(grid).pack(),
                     next_shape: self.next_shape.clone(),
                 }
             }

@@ -1,6 +1,8 @@
 use std::io::{Stdout, Write};
+
 use termion::color;
 use termion::raw::RawTerminal;
+
 use crate::console::Color;
 use crate::shape::Point;
 
@@ -16,13 +18,18 @@ impl Grid {
         let mut cells: Vec<Vec<Color>> = vec![];
 
         for _y in 0..height {
-            let mut row: Vec<Color> = vec![];
-            for _x in 0..width {
-                row.push(Color::DefaultColor)
-            }
+            let row = Grid::create_empty_row(width);
             cells.push(row);
         }
         Grid { width, height, cells }
+    }
+
+    fn create_empty_row(width: u8) -> Vec<Color> {
+        let mut row: Vec<Color> = vec![];
+        for _x in 0..width {
+            row.push(Color::DefaultColor)
+        }
+        row
     }
 
     pub fn set(&self, x: u8, y: u8, color: Color) -> Grid {
@@ -75,6 +82,17 @@ impl Grid {
         points.into_iter().any(|point| {
             point.x >= self.width as i8 || point.y >= self.height as i8 || point.x < 0 || point.y < 0
         })
+    }
+
+    pub fn pack(&self) -> Grid {
+        let mut new_cells = self.cells.to_vec().into_iter()
+            .filter(|row |
+                row.into_iter().filter(|color| **color == Color::DefaultColor).count() > 0)
+            .collect::<Vec<_>>();
+        while new_cells.len() as u8 != self.height {
+            new_cells.insert(0, Grid::create_empty_row(self.width))
+        }
+        Grid { width: self.width, height: self.height, cells: new_cells }
     }
 
     fn print_row<W: Write>(&self, term: &mut W) {
