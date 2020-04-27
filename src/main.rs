@@ -3,7 +3,10 @@ extern crate termion;
 
 use std::io::{stdout, Write};
 use std::io::Read;
+use std::thread;
+use std::time::Duration;
 
+use termion::{async_stdin, color};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -12,9 +15,6 @@ use crate::console::Color::{self, Black, Blue, Cyan, DefaultColor, Green, Magent
 use crate::grid::Grid;
 use crate::shape::Shape;
 use crate::tetris::Tetris;
-use termion::{async_stdin, color};
-use std::thread;
-use std::time::Duration;
 
 mod console;
 mod grid;
@@ -74,7 +74,7 @@ fn main() {
             }
 
             if key_pressed {
-                while stdin.next().is_some() { }
+                while stdin.next().is_some() {}
 
                 print(&mut stdout, &mut tetris, score);
             }
@@ -115,12 +115,11 @@ fn goto<W: Write>(stdout: &mut W, x: u16, y: u16) {
         .unwrap();
 }
 
-pub fn clear_rec<W: Write>(stdout: &mut W, x: u8, y:u8, width: u8, height: u8) {
+pub fn clear_rec<W: Write>(stdout: &mut W, x: u8, y: u8, width: u8, height: u8) {
+    let row = " ".repeat(width as usize);
     write!(stdout, "{}", termion::style::Reset);
-    for x in x..(x + width) {
-        for y in y..(y + width) {
-            goto(stdout, x as u16, y as u16);
-            write!(stdout, " ");
-        }
+    for iy in y..(y + height) {
+        goto(stdout, x as u16, iy as u16);
+        write!(stdout, "{}", row);
     }
 }
