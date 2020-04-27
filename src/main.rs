@@ -12,7 +12,7 @@ use crate::console::Color::{self, Black, Blue, Cyan, DefaultColor, Green, Magent
 use crate::grid::Grid;
 use crate::shape::Shape;
 use crate::tetris::Tetris;
-use termion::async_stdin;
+use termion::{async_stdin, color};
 use std::thread;
 use std::time::Duration;
 
@@ -25,20 +25,21 @@ fn main() {
     let mut stdout = stdout().into_raw_mode().unwrap();
 
     write!(stdout,
-           "{}{}{}q to exit. Type stuff, use alt, and so on.\n\r",
+           "{}{}q to exit, left and right arrow to move{}down to rotate clockwise, up to rotate counterclockwise.\r\n{}",
            termion::clear::All,
            termion::cursor::Goto(1, 1),
+           termion::cursor::Goto(1, 2),
            termion::cursor::Hide)
         .unwrap();
     stdout.flush().unwrap();
 
     let mut tetris = Tetris::new(10, 20);
 
-    goto(&mut stdout, 1, 2);
-
-    tetris.print(&mut stdout);
-
     let mut stdin = async_stdin().bytes();
+
+    let mut score: u32 = 0;
+
+    print(&mut stdout, &mut tetris, score);
 
     'outer: loop {
         for i in 0..40 {
@@ -48,7 +49,9 @@ fn main() {
             if let Some(Ok(b'q')) = b {
                 break 'outer;
             } else if let Some(Ok(b' ')) = b {
-                tetris = tetris.fall();
+                let (packed, new_tetris) = tetris.fall();
+                score += packed as u32 * 1000;
+                tetris = new_tetris;
                 key_pressed = true;
             } else if let Some(Ok(27)) = b {
                 let b = stdin.next();
@@ -73,23 +76,34 @@ fn main() {
             if key_pressed {
                 while stdin.next().is_some() { }
 
-                goto(&mut stdout, 1, 2);
-                tetris.print(&mut stdout);
+                print(&mut stdout, &mut tetris, score);
             }
 
             thread::sleep(Duration::from_millis(10));
         }
 
-        tetris = tetris.next();
+        let (packed, new_tetris) = tetris.next();
+        tetris = new_tetris;
 
-        goto(&mut stdout, 1, 2);
-        tetris.print(&mut stdout);
+        score += packed as u32 * 1000;
+
+        print(&mut stdout, &mut tetris, score);
     }
 
     write!(stdout,
            "{}",
            termion::cursor::Show)
         .unwrap();
+}
+
+fn print<W: Write>(mut stdout: &mut W, tetris: &mut Tetris, score: u32) {
+    write!(stdout,
+           "{}Score: {}",
+           termion::cursor::Goto(1, 3),
+           score)
+        .unwrap();
+    goto(&mut stdout, 1, 4);
+    tetris.print(&mut stdout);
 }
 
 fn goto<W: Write>(stdout: &mut W, x: u16, y: u16) {

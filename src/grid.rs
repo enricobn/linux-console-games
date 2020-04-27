@@ -33,12 +33,11 @@ impl Grid {
     }
 
     pub fn set(&self, x: u8, y: u8, color: Color) -> Grid {
-        // TODO optimize: self.cells.to_vec() is a copy
-        let new_cells = self.cells.to_vec().into_iter().enumerate()
+        let new_cells = self.cells.iter().enumerate()
             .map(|(iy, row)|
-                row.into_iter().enumerate()
+                row.iter().enumerate()
                     .map(|(ix, v_color)|
-                        if iy == y.into() && ix == x.into() { color.clone() } else { v_color }
+                        if iy == y.into() && ix == x.into() { color.clone() } else { v_color.clone() }
                     ).collect::<Vec<_>>()
             ).collect::<Vec<_>>();
         Grid { width: self.width, height: self.height, cells: new_cells }
@@ -48,11 +47,13 @@ impl Grid {
         if border { self.print_row(term); }
 
         for row in &self.cells {
-            write!(term, "{} ", color::Bg(color::White)).unwrap();
+            if border {write!(term, "{} ", color::Bg(color::White)).unwrap(); }
+
             for color in row {
                 write!(term, "{}  ", color::Bg(*color));
             }
             if border { write!(term, "{} {}\n\r", color::Bg(color::White), termion::style::Reset).unwrap(); }
+            else { write!(term, "{}\n\r", termion::style::Reset).unwrap(); }
         }
 
         if border { self.print_row(term); }
@@ -61,19 +62,19 @@ impl Grid {
     }
 
     pub fn any_occupied(&self, points: &Vec<Point>) -> bool {
-        points.into_iter().any(|point| {
+        points.iter().any(|point| {
             self.cells[point.y as usize][point.x as usize] != Color::DefaultColor
         })
     }
 
     pub fn any_horizontal_out(&self, points: &Vec<Point>) -> bool {
-        points.into_iter().any(|point| {
+        points.iter().any(|point| {
             point.x >= self.width as i8 || point.x < 0
         })
     }
 
     pub fn any_vertical_out(&self, points: &Vec<Point>) -> bool {
-        points.into_iter().any(|point| {
+        points.iter().any(|point| {
             point.x >= self.width as i8 || point.x < 0
         })
     }
@@ -84,15 +85,17 @@ impl Grid {
         })
     }
 
-    pub fn pack(&self) -> Grid {
+    pub fn pack(&self) -> (u8, Grid) {
         let mut new_cells = self.cells.to_vec().into_iter()
             .filter(|row |
                 row.into_iter().filter(|color| **color == Color::DefaultColor).count() > 0)
             .collect::<Vec<_>>();
+        let mut packed = 0;
         while new_cells.len() as u8 != self.height {
+            packed += 1;
             new_cells.insert(0, Grid::create_empty_row(self.width))
         }
-        Grid { width: self.width, height: self.height, cells: new_cells }
+        (packed, Grid { width: self.width, height: self.height, cells: new_cells })
     }
 
     fn print_row<W: Write>(&self, term: &mut W) {
