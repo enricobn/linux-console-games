@@ -30,7 +30,7 @@ impl Point {
 #[derive(Clone)]
 pub struct Shape {
     points: Vec<Point>,
-    color: Color,
+    pub color: Color,
 }
 
 impl Shape {

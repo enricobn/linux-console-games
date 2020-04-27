@@ -6,6 +6,7 @@ use termion::raw::RawTerminal;
 use crate::grid::Grid;
 use crate::shape::{Point, Shape};
 use std::borrow::Borrow;
+use termion::color;
 
 const STATE_INIT: u8 = 0;
 const STATE_NORMAL: u8 = 1;
@@ -168,5 +169,13 @@ impl Tetris {
 
     pub fn print<W: Write>(&self, term: &mut W) {
         self.grid.print(term, true)
+    }
+
+    pub fn print_next_shape<W: Write>(&self, term: &mut W, x: u8, y: u8) {
+        let points = self.next_shape.to_points(0, 0);
+        write!(term, "{}", color::Bg(self.next_shape.color)).unwrap();
+        for point in points {
+            write!(term, "{}  ",termion::cursor::Goto((x + point.x as u8 * 2) as u16, (y + point.y as u8) as u16)).unwrap();
+        }
     }
 }

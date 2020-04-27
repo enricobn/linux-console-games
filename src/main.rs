@@ -102,6 +102,8 @@ fn print<W: Write>(mut stdout: &mut W, tetris: &mut Tetris, score: u32) {
            termion::cursor::Goto(1, 3),
            score)
         .unwrap();
+    clear_rec(stdout, 25, 5, 10, 5);
+    tetris.print_next_shape(stdout, 30, 5);
     goto(&mut stdout, 1, 4);
     tetris.print(&mut stdout);
 }
@@ -111,4 +113,14 @@ fn goto<W: Write>(stdout: &mut W, x: u16, y: u16) {
            "{}",
            termion::cursor::Goto(x, y))
         .unwrap();
+}
+
+pub fn clear_rec<W: Write>(stdout: &mut W, x: u8, y:u8, width: u8, height: u8) {
+    write!(stdout, "{}", termion::style::Reset);
+    for x in x..(x + width) {
+        for y in y..(y + width) {
+            goto(stdout, x as u16, y as u16);
+            write!(stdout, " ");
+        }
+    }
 }
