@@ -3,7 +3,7 @@ use std::io::{Stdout, Write};
 use termion::color;
 use termion::raw::RawTerminal;
 
-use crate::console::Color;
+use crate::consolecolor::Color;
 use crate::shape::Point;
 
 #[derive(Clone)]

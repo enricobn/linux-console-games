@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use crate::console::Color;
+use crate::consolecolor::Color;
 use crate::grid::Grid;
 
 #[derive(Clone, Debug)]

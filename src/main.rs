@@ -11,12 +11,12 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
-use crate::console::Color::{self, Black, Blue, Cyan, DefaultColor, Green, Magenta, Red, White, Yellow};
+use crate::consolecolor::Color::{self, Black, Blue, Cyan, DefaultColor, Green, Magenta, Red, White, Yellow};
 use crate::grid::Grid;
 use crate::shape::Shape;
 use crate::tetris::Tetris;
 
-mod console;
+mod consolecolor;
 mod grid;
 mod shape;
 mod tetris;

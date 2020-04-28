@@ -14,14 +14,6 @@ pub enum Color {
     DefaultColor,
 }
 
-fn print_color(s: &str) {
-    print!("\x1B[{}m", s)
-}
-
-fn print_csi(s: &str) {
-    print!("\x1B[{}", s)
-}
-
 impl termion::color::Color for Color {
 
     fn write_fg(&self, f: &mut Formatter) -> Result<(), Error> {

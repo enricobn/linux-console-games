@@ -58,7 +58,7 @@ pub struct Tetris {
 
 impl Tetris {
     fn random_shape() -> Shape {
-        let shapes: Vec<Shape> = vec![Shape::l(), Shape::z(), Shape::s(), Shape::i(), Shape::o()];
+        let shapes: Vec<Shape> = Shape::shapes();
         let mut rng = rand::thread_rng();
         shapes[rng.gen_range(0, &shapes.len())].clone()
     }
