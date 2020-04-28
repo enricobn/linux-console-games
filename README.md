@@ -1,3 +1,3 @@
-## Console games in Rust
+## Linux console games in Rust
 
 * Tetris

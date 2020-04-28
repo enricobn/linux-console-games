@@ -31,6 +31,7 @@ fn main() {
            termion::cursor::Goto(1, 2),
            termion::cursor::Hide)
         .unwrap();
+
     stdout.flush().unwrap();
 
     let mut tetris = Tetris::new(10, 20);
@@ -82,18 +83,29 @@ fn main() {
             thread::sleep(Duration::from_millis(10));
         }
 
-        let (packed, new_tetris) = tetris.next();
-        tetris = new_tetris;
 
-        score += packed as u32 * 1000;
+        if let Some((packed, new_tetris)) = tetris.next() {
+            tetris = new_tetris;
 
-        print(&mut stdout, &mut tetris, score);
+            score += packed as u32 * 1000;
+            print(&mut stdout, &mut tetris, score);
+        } else {
+            write!(stdout,
+                   "{}Game over! Score: {}\n\r",
+                   termion::clear::All,
+                   score)
+                .unwrap();
+            break 'outer
+        }
+
     }
 
     write!(stdout,
            "{}",
            termion::cursor::Show)
         .unwrap();
+
+    stdout.flush().unwrap();
 }
 
 fn print<W: Write>(mut stdout: &mut W, tetris: &mut Tetris, score: u32) {

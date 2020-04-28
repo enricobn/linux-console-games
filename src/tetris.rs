@@ -68,47 +68,56 @@ impl Tetris {
         Tetris { state: STATE_INIT, grid: Grid::new(width, height), current_piece, next_shape: Tetris::random_shape() }
     }
 
-    pub fn next(&self) -> (u8, Tetris) {
+    pub fn next(&self) -> Option<(u8, Tetris)> {
         if self.state == STATE_INIT {
-            (0, Tetris {
+            Some((0, Tetris {
                 state: STATE_NORMAL,
                 current_piece: self.current_piece.clone(),
                 grid: self.current_piece.print(self.grid.clone()),
                 next_shape: self.next_shape.clone(),
-            })
+            }))
         } else if self.state == STATE_NORMAL {
             let grid = self.current_piece.clear(self.grid.clone());
             let piece = self.current_piece.down();
             let points = piece.shape.to_points(piece.position.x, piece.position.y);
             if grid.any_out(&points) || grid.any_occupied(&points) {
                 let (packed, new_grid) = self.grid.pack();
-                let (new_packed, tetris) = Tetris {
+                if let Some((new_packed, tetris)) = (Tetris {
                     state: STATE_NEW_PIECE,
                     current_piece: piece.clone(),
                     grid: new_grid,
                     next_shape: self.next_shape.clone(),
-                }.next();
-                (packed + new_packed, tetris)
+                }.next()) {
+                    Some((packed + new_packed, tetris))
+                } else {
+                    None
+                }
             } else {
-                (0, Tetris {
+                Some((0, Tetris {
                     state: STATE_NORMAL,
                     current_piece: piece.clone(),
                     grid: piece.print(grid),
                     next_shape: self.next_shape.clone(),
-                })
+                }))
             }
         } else {
             let current_piece = Piece {
                 shape: self.next_shape.clone(),
                 position: Point::new(self.grid.width as i8 / 2, 1),
             };
-            let next_shape = Tetris::random_shape();
-            (0, Tetris {
-                state: STATE_NORMAL,
-                current_piece: current_piece.clone(),
-                grid: current_piece.print(self.grid.clone()),
-                next_shape,
-            })
+
+            let points = current_piece.shape.to_points(current_piece.position.x, current_piece.position.y);
+            if self.grid.any_out(&points) || self.grid.any_occupied(&points) {
+                None
+            } else {
+                let next_shape = Tetris::random_shape();
+                Some((0, Tetris {
+                    state: STATE_NORMAL,
+                    current_piece: current_piece.clone(),
+                    grid: current_piece.print(self.grid.clone()),
+                    next_shape,
+                }))
+            }
         }
     }
 
