@@ -1,4 +1,4 @@
-use std::io::{Stdout, Write};
+use std::io::Write;
 
 use termion::color;
 use termion::raw::RawTerminal;
@@ -37,7 +37,7 @@ impl Grid {
             .map(|(iy, row)|
                 row.iter().enumerate()
                     .map(|(ix, v_color)|
-                        if iy == y.into() && ix == x.into() { color.clone() } else { v_color.clone() }
+                        if iy as u8 == y && ix as u8 == x { color.clone() } else { v_color.clone() }
                     ).collect::<Vec<_>>()
             ).collect::<Vec<_>>();
         Grid { width: self.width, height: self.height, cells: new_cells }

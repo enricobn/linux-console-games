@@ -1,4 +1,8 @@
 extern crate rand;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
 extern crate termion;
 
 use std::io::{stdout, Write};
@@ -6,22 +10,24 @@ use std::io::Read;
 use std::thread;
 use std::time::Duration;
 
-use termion::{async_stdin, color};
-use termion::event::Key;
-use termion::input::TermRead;
+use termion::async_stdin;
 use termion::raw::IntoRawMode;
 
-use crate::consolecolor::Color::{self, Black, Blue, Cyan, DefaultColor, Green, Magenta, Red, White, Yellow};
 use crate::grid::Grid;
 use crate::shape::Shape;
 use crate::tetris::Tetris;
+use crate::persistence::HighScores;
+
 
 mod consolecolor;
 mod grid;
+mod persistence;
 mod shape;
 mod tetris;
 
 fn main() {
+    let mut scores = HighScores::read(".tetris").unwrap();
+
     let mut stdout = stdout().into_raw_mode().unwrap();
 
     write!(stdout,
@@ -83,7 +89,6 @@ fn main() {
             thread::sleep(Duration::from_millis(10));
         }
 
-
         if let Some((packed, new_tetris)) = tetris.next() {
             tetris = new_tetris;
 
@@ -95,6 +100,9 @@ fn main() {
                    termion::clear::All,
                    score)
                 .unwrap();
+            scores.add(score);
+            scores.save().unwrap();
+
             break 'outer
         }
 
