@@ -53,7 +53,7 @@ fn main() {
 }
 
 fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
-    let mut scores = HighScores::read(".tetris").unwrap();
+    let mut scores = HighScores::read(".tetris")?;
 
     write!(stdout,
            "{}{}q to exit, left and right arrow to move{}down to rotate clockwise, up to rotate counterclockwise.\r\n{}",
@@ -121,7 +121,7 @@ fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
         } else {
             // game as ended
             scores.add(score);
-            scores.save().unwrap();
+            scores.save()?;
 
             break 'outer;
         }

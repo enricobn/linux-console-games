@@ -47,12 +47,12 @@ impl Grid {
         if border { self.print_row(term); }
 
         for row in &self.cells {
-            if border { write!(term, "{} ", color::Bg(color::White)).unwrap(); }
+            if border { write!(term, "{} ", color::Bg(color::White))?; }
 
             for color in row {
-                write!(term, "{}  ", color::Bg(*color)).unwrap();
+                write!(term, "{}  ", color::Bg(*color))?;
             }
-            if border { write!(term, "{} {}\n\r", color::Bg(color::White), termion::style::Reset).unwrap(); } else { write!(term, "{}\n\r", termion::style::Reset).unwrap(); }
+            if border { write!(term, "{} {}\n\r", color::Bg(color::White), termion::style::Reset)?; } else { write!(term, "{}\n\r", termion::style::Reset)?; }
         }
 
         if border { self.print_row(term); }
@@ -98,12 +98,12 @@ impl Grid {
         (packed, Grid { width: self.width, height: self.height, cells: new_cells })
     }
 
-    fn print_row<W: Write>(&self, term: &mut W) {
-        write!(term, "{} ", color::Bg(color::White)).unwrap();
+    fn print_row<W: Write>(&self, term: &mut W) -> io::Result<()> {
+        write!(term, "{} ", color::Bg(color::White))?;
         for _ in 0..self.width {
-            write!(term, "  ").unwrap();
+            write!(term, "  ")?;
         }
-        write!(term, " {}\n\r", termion::style::Reset).unwrap();
+        write!(term, " {}\n\r", termion::style::Reset)
     }
 }
 

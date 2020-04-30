@@ -1,8 +1,7 @@
-use std::error::Error;
-use std::fs;
+use std::{fs, io};
 use std::fs::create_dir_all;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, ErrorKind, Error};
 use std::path::PathBuf;
 
 use chrono::{DateTime, Local};
@@ -33,7 +32,7 @@ impl HighScore {
 }
 
 impl HighScores {
-    pub fn read(path: &str) -> Result<HighScores, Box<dyn Error>> {
+    pub fn read(path: &str) -> io::Result<HighScores> {
         let file = HighScores::file(path.to_string())?;
 
         if !file.exists() {
@@ -51,7 +50,7 @@ impl HighScores {
         }
     }
 
-    pub fn save(&self) -> Result<(), Box<dyn Error>> {
+    pub fn save(&self) -> io::Result<()> {
         let file = HighScores::file(self.path.clone())?;
 
         create_dir_all(&file.parent().unwrap())?;
@@ -62,7 +61,7 @@ impl HighScores {
             Ok(serialized) => {
                 fs::write(file, serialized).map_err(From::from)
             }
-            Err(e) => Err(Box::new(e))
+            Err(e) => Result::Err(Error::new(ErrorKind::Other,e.to_string()))
         }
     }
 
@@ -93,11 +92,11 @@ impl HighScores {
         self.entries.first().map(|it| it.score()).unwrap_or(0)
     }
 
-    fn file(path: String) -> Result<PathBuf, Box<dyn Error>> {
+    fn file(path: String) -> io::Result<PathBuf> {
         let mut file = if let Some(home) = home_dir() {
             home
         } else {
-            return Err("Impossible to get your home dir!".into());
+            return Result::Err(Error::new(ErrorKind::Other, "Impossible to get your home dir!"));
         };
 
         file.push(path);
