@@ -36,11 +36,11 @@ macro_rules! attempt { // `try` is a reserved keyword
 }
 
 fn main() {
-    attempt! {{
-        run();
-    } catch(e) {
-        let mut stdout = stdout().into_raw_mode().unwrap();
+    let mut stdout = stdout().into_raw_mode().unwrap();
 
+    attempt! {{
+        run(&mut stdout);
+    } catch(e) {
         write!(stdout,
                "{}\n\r",
                termion::cursor::Show)
@@ -52,10 +52,8 @@ fn main() {
     }}
 }
 
-fn run() -> io::Result<()> {
+fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
     let mut scores = HighScores::read(".tetris").unwrap();
-
-    let mut stdout = stdout().into_raw_mode().unwrap();
 
     write!(stdout,
            "{}{}q to exit, left and right arrow to move{}down to rotate clockwise, up to rotate counterclockwise.\r\n{}",
