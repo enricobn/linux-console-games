@@ -1,16 +1,16 @@
-use std::io::{Stdout, Write};
+use std::io::Write;
 
 use rand::prelude::*;
-use termion::raw::RawTerminal;
 
 use crate::grid::Grid;
 use crate::shape::{Point, Shape};
-use std::borrow::Borrow;
 use termion::color;
+use std::io;
 
 const STATE_INIT: u8 = 0;
 const STATE_NORMAL: u8 = 1;
 const STATE_NEW_PIECE: u8 = 2;
+const START_Y: i8 = 2;
 
 #[derive(Clone)]
 pub struct Piece {
@@ -64,127 +64,129 @@ impl Tetris {
     }
 
     pub fn new(width: u8, height: u8) -> Tetris {
-        let current_piece = Piece { shape: Tetris::random_shape(), position: Point::new(width as i8 / 2, 1) };
+        let current_piece = Piece { shape: Tetris::random_shape(), position: Point::new(width as i8 / 2, START_Y) };
         Tetris { state: STATE_INIT, grid: Grid::new(width, height), current_piece, next_shape: Tetris::random_shape() }
     }
 
-    pub fn next(&self) -> Option<(u8, Tetris)> {
+    /// returns None if game ended
+    pub fn next(&self) -> io::Result<Option<(u8, Tetris)>> {
         if self.state == STATE_INIT {
-            Some((0, Tetris {
+            Result::Ok(Some((0, Tetris {
                 state: STATE_NORMAL,
                 current_piece: self.current_piece.clone(),
                 grid: self.current_piece.print(self.grid.clone()),
                 next_shape: self.next_shape.clone(),
-            }))
+            })))
         } else if self.state == STATE_NORMAL {
             let grid = self.current_piece.clear(self.grid.clone());
             let piece = self.current_piece.down();
             let points = piece.shape.to_points(piece.position.x, piece.position.y);
-            if grid.any_out(&points) || grid.any_occupied(&points) {
+            if grid.any_vertical_out(&points) || grid.any_occupied(&points)? {
                 let (packed, new_grid) = self.grid.pack();
                 if let Some((new_packed, tetris)) = (Tetris {
                     state: STATE_NEW_PIECE,
                     current_piece: piece.clone(),
                     grid: new_grid,
                     next_shape: self.next_shape.clone(),
-                }.next()) {
-                    Some((packed + new_packed, tetris))
+                }.next())? {
+                    Result::Ok(Some((packed + new_packed, tetris)))
                 } else {
-                    None
+                    Result::Ok(None)
                 }
             } else {
-                Some((0, Tetris {
+                Result::Ok(Some((0, Tetris {
                     state: STATE_NORMAL,
                     current_piece: piece.clone(),
                     grid: piece.print(grid),
                     next_shape: self.next_shape.clone(),
-                }))
+                })))
             }
         } else {
             let current_piece = Piece {
                 shape: self.next_shape.clone(),
-                position: Point::new(self.grid.width as i8 / 2, 1),
+                position: Point::new(self.grid.width as i8 / 2, START_Y),
             };
 
             let points = current_piece.shape.to_points(current_piece.position.x, current_piece.position.y);
-            if self.grid.any_out(&points) || self.grid.any_occupied(&points) {
-                None
+            if self.grid.any_occupied(&points)? {
+                Result::Ok(None)
             } else {
                 let next_shape = Tetris::random_shape();
-                Some((0, Tetris {
+                Result::Ok(Some((0, Tetris {
                     state: STATE_NORMAL,
                     current_piece: current_piece.clone(),
                     grid: current_piece.print(self.grid.clone()),
                     next_shape,
-                }))
+                })))
             }
         }
     }
 
-    pub fn right(&self) -> Tetris {
+    pub fn right(&self) -> io::Result<Tetris> {
         self.mv(|piece| piece.right())
     }
 
-    pub fn left(&self) -> Tetris {
+    pub fn left(&self) -> io::Result<Tetris> {
         self.mv(|piece| piece.left())
     }
 
-    pub fn rotate_left(&self) -> Tetris {
+    pub fn rotate_left(&self) -> io::Result<Tetris> {
         self.mv(|piece| piece.rotate_left())
     }
 
-    pub fn rotate_right(&self) -> Tetris {
+    pub fn rotate_right(&self) -> io::Result<Tetris> {
         self.mv(|piece| piece.rotate_right())
     }
 
-    fn mv<F>(&self,f: F) -> Tetris where F: Fn(Piece) -> Piece {
+    fn mv<F: Fn(Piece) -> Piece>(&self,f: F) -> io::Result<Tetris> {
         if self.state == STATE_NORMAL {
             let grid = self.current_piece.clear(self.grid.clone());
             let piece = f(self.current_piece.clone());
             let points = piece.shape.to_points(piece.position.x, piece.position.y);
-            if grid.any_out(&points) || grid.any_occupied(&points) {
-                (*self).clone()
+            if grid.any_out(&points) || grid.any_occupied(&points)? {
+                Result::Ok((*self).clone())
             } else {
-                Tetris {
+                Result::Ok(Tetris {
                     state: STATE_NORMAL,
                     current_piece: piece.clone(),
                     grid: piece.print(grid),
                     next_shape: self.next_shape.clone(),
-                }
+                })
             }
         } else {
-            (*self).clone()
+            Result::Ok((*self).clone())
         }
     }
 
-    pub fn fall(&self) -> (u8, Tetris) {
+    pub fn fall(&self) -> io::Result<(u8, Tetris)> {
         let mut piece = self.current_piece.clone();
         let grid = piece.clear(self.grid.clone());
         loop {
             let piece_down = piece.down();
             let points = piece_down.shape.to_points(piece_down.position.x, piece_down.position.y);
-            if grid.any_out(&points) || grid.any_occupied(&points) {
+            if grid.any_vertical_out(&points) || grid.any_occupied(&points)? {
                 let (packed, new_grid) = piece.print(grid).pack();
-                return (packed, Tetris {
+                return Result::Ok((packed, Tetris {
                     state: STATE_NEW_PIECE,
                     current_piece: piece.clone(),
                     grid: new_grid,
                     next_shape: self.next_shape.clone(),
-                })
+                }))
             }
             piece = piece_down;
         }
     }
 
-    pub fn print<W: Write>(&self, term: &mut W) {
+    pub fn print<W: Write>(&self, term: &mut W) -> io::Result<()> {
         self.grid.print(term, true)
     }
 
-    pub fn print_next_shape<W: Write>(&self, term: &mut W, x: u8, y: u8) {
+    pub fn print_next_shape<W: Write>(&self, term: &mut W, x: u8, y: u8) -> io::Result<()> {
         let points = self.next_shape.to_points(0, 0);
-        write!(term, "{}", color::Bg(self.next_shape.color)).unwrap();
+        write!(term, "{}", color::Bg(self.next_shape.color))?;
         for point in points {
-            write!(term, "{}  ",termion::cursor::Goto((x + point.x as u8 * 2) as u16, (y + point.y as u8) as u16)).unwrap();
+            write!(term, "{}  ",termion::cursor::Goto((x + point.x as u8 * 2) as u16, (y + point.y as u8) as u16))?;
         }
+        Result::Ok(())
     }
 }

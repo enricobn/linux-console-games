@@ -1,5 +1,6 @@
 Doing
 ------
+- panicking on debug mode
 - Tetris
 
 Next

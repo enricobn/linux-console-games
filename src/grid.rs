@@ -1,7 +1,7 @@
-use std::io::Write;
+use std::io::{Error, Write, ErrorKind};
+use std::io;
 
 use termion::color;
-use termion::raw::RawTerminal;
 
 use crate::consolecolor::Color;
 use crate::shape::Point;
@@ -43,39 +43,39 @@ impl Grid {
         Grid { width: self.width, height: self.height, cells: new_cells }
     }
 
-    pub fn print<W: Write>(&self, term: &mut W, border: bool) {
+    pub fn print<W: Write>(&self, term: &mut W, border: bool) -> io::Result<()> {
         if border { self.print_row(term); }
 
         for row in &self.cells {
-            if border {write!(term, "{} ", color::Bg(color::White)).unwrap(); }
+            if border { write!(term, "{} ", color::Bg(color::White)).unwrap(); }
 
             for color in row {
-                write!(term, "{}  ", color::Bg(*color));
+                write!(term, "{}  ", color::Bg(*color)).unwrap();
             }
-            if border { write!(term, "{} {}\n\r", color::Bg(color::White), termion::style::Reset).unwrap(); }
-            else { write!(term, "{}\n\r", termion::style::Reset).unwrap(); }
+            if border { write!(term, "{} {}\n\r", color::Bg(color::White), termion::style::Reset).unwrap(); } else { write!(term, "{}\n\r", termion::style::Reset).unwrap(); }
         }
 
         if border { self.print_row(term); }
 
-        term.flush().unwrap();
+        term.flush()
     }
 
-    pub fn any_occupied(&self, points: &Vec<Point>) -> bool {
-        points.iter().any(|point| {
+    pub fn any_occupied(&self, points: &Vec<Point>) -> io::Result<bool> {
+        let error = points.iter().any(|point| point.x < 0 || point.x >= self.width as i8
+            || point.y < 0 || point.y >= self.height as i8);
+
+        if error {
+            return Result::Err(Error::new(ErrorKind::Other, "Out of bounds."));
+        }
+
+        Result::Ok(points.iter().any(|point| {
             self.cells[point.y as usize][point.x as usize] != Color::DefaultColor
-        })
-    }
-
-    pub fn any_horizontal_out(&self, points: &Vec<Point>) -> bool {
-        points.iter().any(|point| {
-            point.x >= self.width as i8 || point.x < 0
-        })
+        }))
     }
 
     pub fn any_vertical_out(&self, points: &Vec<Point>) -> bool {
         points.iter().any(|point| {
-            point.x >= self.width as i8 || point.x < 0
+            point.y >= self.height as i8 || point.y < 0
         })
     }
 
@@ -87,7 +87,7 @@ impl Grid {
 
     pub fn pack(&self) -> (u8, Grid) {
         let mut new_cells = self.cells.to_vec().into_iter()
-            .filter(|row |
+            .filter(|row|
                 row.into_iter().filter(|color| **color == Color::DefaultColor).count() > 0)
             .collect::<Vec<_>>();
         let mut packed = 0;
@@ -106,3 +106,4 @@ impl Grid {
         write!(term, " {}\n\r", termion::style::Reset).unwrap();
     }
 }
+
