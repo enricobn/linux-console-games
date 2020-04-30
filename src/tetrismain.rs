@@ -1,10 +1,9 @@
 use std::{io, thread};
-use std::io::{stdout, Write};
+use std::io::Write;
 use std::io::Read;
 use std::time::Duration;
 
 use termion::async_stdin;
-use termion::raw::IntoRawMode;
 
 use crate::persistence::HighScores;
 use crate::tetris::Tetris;

@@ -44,7 +44,7 @@ impl Grid {
     }
 
     pub fn print<W: Write>(&self, term: &mut W, border: bool) -> io::Result<()> {
-        if border { self.print_row(term); }
+        if border { self.print_row(term)?; }
 
         for row in &self.cells {
             if border { write!(term, "{} ", color::Bg(color::White))?; }
@@ -55,7 +55,7 @@ impl Grid {
             if border { write!(term, "{} {}\n\r", color::Bg(color::White), termion::style::Reset)?; } else { write!(term, "{}\n\r", termion::style::Reset)?; }
         }
 
-        if border { self.print_row(term); }
+        if border { self.print_row(term)?; }
 
         term.flush()
     }

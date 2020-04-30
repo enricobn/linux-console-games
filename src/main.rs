@@ -5,18 +5,13 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate termion;
 
-use std::{io, thread};
+use std::io;
 use std::io::{stdin, stdout, Write};
-use std::io::Read;
-use std::time::Duration;
 
-use termion::{async_stdin, color};
+use termion::color;
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
-
-use crate::persistence::HighScores;
-use crate::tetris::Tetris;
 
 mod consolecolor;
 mod grid;
@@ -63,7 +58,7 @@ fn main() {
             let menu_item = menu[i];
 
             if i == menu.len() -1 {
-                write!(stdout, "\n\r");
+                write!(stdout, "\n\r").unwrap();
             }
 
             if index == i as i8 {
