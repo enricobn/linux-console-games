@@ -9,12 +9,11 @@ use std::io;
 use std::io::{stdin, stdout, Write};
 
 use termion::color;
-use termion::event::Key;
-use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
 mod consolecolor;
 mod grid;
+mod menu;
 mod persistence;
 mod shape;
 mod tetris;
@@ -37,94 +36,39 @@ fn main() {
     let mut stdout = stdout().into_raw_mode().unwrap();
 
     write!(stdout,
-           "{}{}{}",
+           "{}{}{}{}Console games{}\r\n\n",
+           termion::cursor::Hide,
            termion::clear::All,
            termion::cursor::Goto(1, 1),
-           termion::cursor::Hide).unwrap();
+           color::Bg(color::Red),
+           termion::style::Reset).unwrap();
 
-    let mut index: i8 = 0;
+    let menu = vec!("Tetris", "Snake");
 
-    let menu = vec!("Tetris", "Snake", "Quit");
+    let choice = menu::choose(&mut stdout, &menu, 1, 3).unwrap();
 
-    'outer: loop {
-        write!(stdout,
-               "{}{}{}Console games{}\r\n\n",
-               termion::clear::All,
-               termion::cursor::Goto(1, 1),
-               color::Bg(color::Red),
-               termion::style::Reset).unwrap();
-
-        for i in 0..menu.len() {
-            let menu_item = menu[i];
-
-            if i == menu.len() -1 {
-                write!(stdout, "\n\r").unwrap();
-            }
-
-            if index == i as i8 {
-                write!(stdout, "{} ", color::Bg(color::Cyan)).unwrap();
-            } else {
-                write!(stdout, "{} ", termion::style::Reset).unwrap();
-            }
+    if let Some(index) = choice {
+        attempt! {{
+            run(&mut stdout, index);
+        } catch(e) {
             write!(stdout,
-                   "{}\r\n{}",
-                   menu_item,
-                   termion::style::Reset).unwrap();
-        };
+                   "{}\n\r",
+                   termion::cursor::Show)
+                .unwrap();
 
-        stdout.flush().unwrap();
+            stdout.flush().unwrap();
 
-        let stdin = stdin();
-
-        for c in stdin.keys() {
-            match c.unwrap() {
-                Key::Char('q') => {
-                    index = -1;
-                    break 'outer;
-                }
-                Key::Up => {
-                    index -= 1;
-                    if index < 0 {
-                        index = 0
-                    }
-                    break;
-                }
-                Key::Down => {
-                    index += 1;
-                    if index >= menu.len() as i8 {
-                        index = menu.len() as i8 - 1;
-                    }
-                    break;
-                }
-                Key::Char('\n') => break 'outer,
-                _ => break
-            };
-        }
+            println!("Failed to run: {}", e);
+        }}
     }
 
-    if index < 0 {
-        write!(stdout,
-               "{}{}",
-               termion::clear::All,
-               termion::cursor::Show).unwrap();
-        return;
-    }
-
-    attempt! {{
-        run(&mut stdout, index);
-    } catch(e) {
-        write!(stdout,
-               "{}\n\r",
-               termion::cursor::Show)
-            .unwrap();
-
-        stdout.flush().unwrap();
-
-        println!("Failed to run: {}", e);
-    }}
+    write!(stdout,
+           "{}{}\r\n",
+           termion::clear::All,
+           termion::cursor::Show).unwrap();
 }
 
-fn run<W: Write>(mut stdout: &mut W, index: i8) -> io::Result<()> {
+fn run<W: Write>(mut stdout: &mut W, index: u8) -> io::Result<()> {
     if index == 0 {
         tetrismain::run(&mut stdout)
     } else if index == 1 {
