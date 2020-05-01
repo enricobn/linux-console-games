@@ -19,6 +19,8 @@ mod persistence;
 mod shape;
 mod tetris;
 mod tetrismain;
+mod wator;
+mod watormain;
 
 // from https://stackoverflow.com/questions/55755552/what-is-the-rust-equivalent-to-a-try-catch-statement
 macro_rules! attempt { // `try` is a reserved keyword
@@ -73,8 +75,7 @@ fn run<W: Write>(mut stdout: &mut W, index: u8) -> io::Result<()> {
     if index == 0 {
         tetrismain::run(&mut stdout)
     } else if index == 1 {
-        println!("Snake");
-        Result::Ok(())
+        watormain::run(&mut stdout)
     } else {
         Result::Ok(())
     }
