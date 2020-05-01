@@ -7,6 +7,7 @@ use std::io::Write;
 use termion::color;
 
 use crate::common::Point;
+use rand::Rng;
 
 trait Specie {
     fn mv(&self, north: Option<Box<dyn Specie>>,
@@ -16,6 +17,8 @@ trait Specie {
     fn c(&self) -> char;
 
     fn box_clone(&self) -> Box<dyn Specie>;
+
+    fn child(&self) -> Box<dyn Specie>;
 }
 
 impl Clone for Box<dyn Specie>
@@ -56,12 +59,14 @@ impl Fish {
     }
 }
 
+const FISH_REPRODUCTION_TIME : u16 = 100;
+
 impl Specie for Fish {
     fn mv(&self, north: Option<Box<dyn Specie>>, south: Option<Box<dyn Specie>>,
           east: Option<Box<dyn Specie>>, west: Option<Box<dyn Specie>>) -> MvResult {
         let mut life = self.life + 1;
 
-        let child = life > 10;
+        let child = life > FISH_REPRODUCTION_TIME;
 
         if child {
             life = 0;
@@ -88,8 +93,8 @@ impl Specie for Fish {
         let movement = if possible_movements.is_empty() {
             None
         } else {
-            // TODO rand
-            Some(possible_movements[0].clone())
+            let mut rng = rand::thread_rng();
+            Some(possible_movements[rng.gen_range(0, possible_movements.len())].clone())
         };
 
         let me = Fish { life };
@@ -102,6 +107,10 @@ impl Specie for Fish {
 
     fn box_clone(&self) -> Box<dyn Specie> {
         Box::new((*self).clone())
+    }
+
+    fn child(&self) -> Box<dyn Specie> {
+        Box::new(Fish::new() )
     }
 }
 
@@ -133,22 +142,27 @@ impl Wator {
             population.push(row);
         }
 
-        let mut y: usize = 0;
-        for row in &self.population {
-            let mut x: usize = 0;
-            for s in row {
-                let north = self.safe_get(x as i8, y as i8 - 1);
-                let south = self.safe_get(x as i8, y as i8 + 1);
-                let east = self.safe_get(x as i8 + 1, y as i8);
-                let west = self.safe_get(x as i8 - 1, y as i8);
+        for y in 0..self.height as usize {
+            for x in 0..self.width as usize {
+                population[y][x] = self.population[y][x].clone();
+            }
+        }
 
-                if let Some(specie) = s {
+        for y in 0..self.height as usize {
+            for x in 0..self.width as usize {
+                let north = self.safe_get(x as i8, y as i8 - 1, &population);
+                let south = self.safe_get(x as i8, y as i8 + 1, &population);
+                let east = self.safe_get(x as i8 + 1, y as i8, &population);
+                let west = self.safe_get(x as i8 - 1, y as i8, &population);
+
+                if let Some(specie) = &population[y][x].clone() {
+                    population[y][x] = None;
+
                     let movement_result = specie.mv(north, south, east, west);
-
 
                     if let Some(mv) = movement_result.movement {
                         if movement_result.child {
-                            population[y][x] = Some(specie.clone());
+                            population[y][x] = Some(specie.child());
                         }
 
                         match mv {
@@ -165,15 +179,13 @@ impl Wator {
                         population[y][x] = Some(specie.clone());
                     }
                 }
-                x += 1;
             }
-            y += 1;
         }
 
         Wator { width: self.width, height: self.height, population }
     }
 
-    fn safe_get(&self, x: i8, y: i8) -> Option<Box<dyn Specie>> {
+    fn safe_get(&self, x: i8, y: i8, population: &Vec<Vec<Option<Box<dyn Specie>>>>) -> Option<Box<dyn Specie>> {
         let ix = if x < 0 {
             x + self.width as i8
         } else if x >= self.width as i8 {
@@ -190,7 +202,7 @@ impl Wator {
             y
         };
 
-        if let Some(s) = self.population[iy as usize][ix as usize].as_ref() {
+        if let Some(s) = population[iy as usize][ix as usize].as_ref() {
             Some(s.clone())
         } else {
             None

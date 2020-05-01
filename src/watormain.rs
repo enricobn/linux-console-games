@@ -19,7 +19,7 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
 
     stdout.flush()?;
 
-    let mut wator = Wator::new(10, 10);
+    let mut wator = Wator::new(80, 20);
 
     let mut stdin = async_stdin().bytes();
 
@@ -32,7 +32,7 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
         if let Some(Ok(b'q')) = b {
             break;
         }
-        thread::sleep(Duration::from_millis(1000));
+        thread::sleep(Duration::from_millis(10));
         wator = wator.next();
     }
 
@@ -41,7 +41,8 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
 
 fn print<W: Write>(mut stdout: &mut W, wator: &Wator) -> io::Result<()> {
     write!(stdout,
-           "{}",
+           "{}{}",
+           termion::clear::All,
            termion::cursor::Goto(1, 1))?;
     wator.print(&mut stdout, false)
 }
