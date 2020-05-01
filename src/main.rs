@@ -6,12 +6,13 @@ extern crate serde_json;
 extern crate termion;
 
 use std::io;
-use std::io::{stdin, stdout, Write};
+use std::io::{stdout, Write};
 
 use termion::color;
 use termion::raw::IntoRawMode;
 
 mod consolecolor;
+mod common;
 mod grid;
 mod menu;
 mod persistence;
@@ -43,7 +44,7 @@ fn main() {
            color::Bg(color::Red),
            termion::style::Reset).unwrap();
 
-    let menu = vec!("Tetris", "Snake");
+    let menu = vec!("Tetris", "Wator");
 
     let choice = menu::choose(&mut stdout, &menu, 1, 3).unwrap();
 

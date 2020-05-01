@@ -1,11 +1,12 @@
+use std::io;
 use std::io::Write;
 
 use rand::prelude::*;
-
-use crate::grid::Grid;
-use crate::shape::{Point, Shape};
 use termion::color;
-use std::io;
+
+use crate::common::Point;
+use crate::grid::Grid;
+use crate::shape::Shape;
 
 const STATE_INIT: u8 = 0;
 const STATE_NORMAL: u8 = 1;
