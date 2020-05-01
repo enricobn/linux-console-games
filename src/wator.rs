@@ -4,10 +4,10 @@ use std::collections::HashMap;
 use std::io;
 use std::io::Write;
 
+use rand::Rng;
 use termion::color;
 
 use crate::common::Point;
-use rand::Rng;
 
 trait Specie {
     fn mv(&self, north: Option<Box<dyn Specie>>,
@@ -19,6 +19,8 @@ trait Specie {
     fn box_clone(&self) -> Box<dyn Specie>;
 
     fn child(&self) -> Box<dyn Specie>;
+
+    fn can_be_eaten(&self) -> bool;
 }
 
 impl Clone for Box<dyn Specie>
@@ -37,7 +39,7 @@ enum Movement {
 }
 
 struct MvResult {
-    specie: Box<dyn Specie>,
+    specie: Option<Box<dyn Specie>>,
     movement: Option<Movement>,
     child: bool,
 }
@@ -47,19 +49,18 @@ struct Fish {
     life: u16
 }
 
-#[derive(Clone)]
-struct Shark {
-    life: u16,
-    energy: u16,
-}
-
 impl Fish {
     fn new() -> Fish {
         Fish { life: 0 }
     }
 }
 
-const FISH_REPRODUCTION_TIME : u16 = 100;
+const FISH_REPRODUCTION_TIME: u16 = 50;
+const SHARK_REPRODUCTION_TIME: u16 = 100;
+const SHARK_INITIAL_ENERGY: u16 = 100;
+const ENERGY_GAIN_ON_EAT: u16 = 10;
+const SHARKS: u16 = 10;
+const FISHES: u16 = 100;
 
 impl Specie for Fish {
     fn mv(&self, north: Option<Box<dyn Specie>>, south: Option<Box<dyn Specie>>,
@@ -98,7 +99,7 @@ impl Specie for Fish {
         };
 
         let me = Fish { life };
-        MvResult { specie: Box::new(me), movement, child }
+        MvResult { specie: Some(Box::new(me)), movement, child }
     }
 
     fn c(&self) -> char {
@@ -110,7 +111,110 @@ impl Specie for Fish {
     }
 
     fn child(&self) -> Box<dyn Specie> {
-        Box::new(Fish::new() )
+        Box::new(Fish::new())
+    }
+
+    fn can_be_eaten(&self) -> bool {
+        true
+    }
+}
+
+#[derive(Clone)]
+struct Shark {
+    life: u16,
+    energy: u16,
+}
+
+impl Shark {
+    fn new() -> Shark {
+        Shark { life: 0, energy: SHARK_INITIAL_ENERGY }
+    }
+}
+
+impl Specie for Shark {
+    fn mv(&self, north: Option<Box<dyn Specie>>, south: Option<Box<dyn Specie>>,
+          east: Option<Box<dyn Specie>>, west: Option<Box<dyn Specie>>) -> MvResult {
+        let mut life = self.life + 1;
+
+        let child = life > SHARK_REPRODUCTION_TIME;
+
+        if child {
+            life = 0;
+        }
+
+        let mut energy = self.energy - 1;
+
+        if energy == 0 {
+            return MvResult { specie: None, movement: None, child: false };
+        }
+
+        let mut possible_movements: Vec<Movement> = Vec::new();
+        let mut possible_eats: Vec<Movement> = Vec::new();
+
+        if let None = north {
+            possible_movements.push(Movement::North)
+        } else if let Some(s) = north {
+            if s.can_be_eaten() {
+                possible_eats.push(Movement::North)
+            }
+        }
+
+        if let None = south {
+            possible_movements.push(Movement::South)
+        } else if let Some(s) = south {
+            if s.can_be_eaten() {
+                possible_eats.push(Movement::South)
+            }
+        }
+
+        if let None = west {
+            possible_movements.push(Movement::West)
+        } else if let Some(s) = west {
+            if s.can_be_eaten() {
+                possible_eats.push(Movement::West)
+            }
+        }
+
+        if let None = east {
+            possible_movements.push(Movement::East)
+        } else if let Some(s) = east {
+            if s.can_be_eaten() {
+                possible_eats.push(Movement::East)
+            }
+        }
+
+        let mut movement = None;
+
+        if possible_eats.is_empty() {
+            if !possible_movements.is_empty() {
+                let mut rng = rand::thread_rng();
+                movement = Some(possible_movements[rng.gen_range(0, possible_movements.len())].clone())
+            }
+        } else {
+            let mut rng = rand::thread_rng();
+            energy += ENERGY_GAIN_ON_EAT;
+            movement = Some(possible_eats[rng.gen_range(0, possible_eats.len())].clone())
+        }
+
+        let me = Shark { life, energy };
+
+        MvResult { specie: Some(Box::new(me)), movement, child }
+    }
+
+    fn c(&self) -> char {
+        '#'
+    }
+
+    fn box_clone(&self) -> Box<dyn Specie> {
+        Box::new((*self).clone())
+    }
+
+    fn child(&self) -> Box<dyn Specie> {
+        Box::new(Shark::new())
+    }
+
+    fn can_be_eaten(&self) -> bool {
+        false
     }
 }
 
@@ -129,7 +233,33 @@ impl Wator {
             population.push(row);
         }
 
-        population[height as usize / 2][width as usize / 2] = Some(Box::new(Fish::new()));
+        let mut rng = rand::thread_rng();
+
+        let mut fishes = FISHES;
+
+        while fishes > 0 {
+            let x = rng.gen_range(0, width as usize);
+            let y = rng.gen_range(0, height as usize);
+
+            if population[y][x].is_none() {
+                fishes -= 1;
+                population[y][x] = Some(Box::new(Fish::new()));
+            }
+        }
+
+        let mut sharks = SHARKS;
+
+        while sharks > 0 {
+            let x = rng.gen_range(0, width as usize);
+            let y = rng.gen_range(0, height as usize);
+
+            if population[y][x].is_none() {
+                sharks -= 1;
+                population[y][x] = Some(Box::new(Shark::new()));
+            }
+        }
+
+        population[height as usize / 2 + 1][width as usize / 2 + 1] = Some(Box::new(Shark::new()));
 
         Wator { width, height, population }
     }
@@ -160,23 +290,25 @@ impl Wator {
 
                     let movement_result = specie.mv(north, south, east, west);
 
-                    if let Some(mv) = movement_result.movement {
-                        if movement_result.child {
-                            population[y][x] = Some(specie.child());
-                        }
+                    if let Some(specie) = movement_result.specie {
+                        if let Some(mv) = movement_result.movement {
+                            if movement_result.child {
+                                population[y][x] = Some(specie.child());
+                            }
 
-                        match mv {
-                            Movement::North => self.safe_put(x as i8, y as i8 - 1, &mut population,
-                                                             movement_result.specie),
-                            Movement::South => self.safe_put(x as i8, y as i8 + 1, &mut population,
-                                                             movement_result.specie),
-                            Movement::West => self.safe_put(x as i8 - 1, y as i8, &mut population,
-                                                            movement_result.specie),
-                            Movement::East => self.safe_put(x as i8 + 1, y as i8, &mut population,
-                                                            movement_result.specie)
+                            match mv {
+                                Movement::North => self.safe_put(x as i8, y as i8 - 1, &mut population,
+                                                                 specie),
+                                Movement::South => self.safe_put(x as i8, y as i8 + 1, &mut population,
+                                                                 specie),
+                                Movement::West => self.safe_put(x as i8 - 1, y as i8, &mut population,
+                                                                specie),
+                                Movement::East => self.safe_put(x as i8 + 1, y as i8, &mut population,
+                                                                specie)
+                            }
+                        } else {
+                            population[y][x] = Some(specie.clone());
                         }
-                    } else {
-                        population[y][x] = Some(specie.clone());
                     }
                 }
             }

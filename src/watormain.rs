@@ -23,8 +23,6 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
 
     let mut stdin = async_stdin().bytes();
 
-    let mut score: u32 = 0;
-
     loop {
         print(&mut stdout, &mut wator)?;
 
