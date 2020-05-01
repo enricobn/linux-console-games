@@ -66,8 +66,7 @@ fn main() {
     }
 
     write!(stdout,
-           "{}{}\r\n",
-           termion::clear::All,
+           "{}\r\n",
            termion::cursor::Show).unwrap();
 }
 

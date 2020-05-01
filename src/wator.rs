@@ -63,6 +63,7 @@ const SHARKS: u16 = 10;
 const FISHES: u16 = 100;
 
 impl Specie for Fish {
+
     fn mv(&self, north: Option<Box<dyn Specie>>, south: Option<Box<dyn Specie>>,
           east: Option<Box<dyn Specie>>, west: Option<Box<dyn Specie>>) -> MvResult {
         let mut life = self.life + 1;
@@ -132,6 +133,7 @@ impl Shark {
 }
 
 impl Specie for Shark {
+
     fn mv(&self, north: Option<Box<dyn Specie>>, south: Option<Box<dyn Specie>>,
           east: Option<Box<dyn Specie>>, west: Option<Box<dyn Specie>>) -> MvResult {
         let mut life = self.life + 1;
@@ -225,6 +227,7 @@ pub struct Wator {
 }
 
 impl Wator {
+
     pub fn new(width: u8, height: u8) -> Wator {
         let mut population: Vec<Vec<Option<Box<dyn Specie>>>> = vec![];
 
@@ -258,8 +261,6 @@ impl Wator {
                 population[y][x] = Some(Box::new(Shark::new()));
             }
         }
-
-        population[height as usize / 2 + 1][width as usize / 2 + 1] = Some(Box::new(Shark::new()));
 
         Wator { width, height, population }
     }
@@ -317,22 +318,26 @@ impl Wator {
         Wator { width: self.width, height: self.height, population }
     }
 
-    fn safe_get(&self, x: i8, y: i8, population: &Vec<Vec<Option<Box<dyn Specie>>>>) -> Option<Box<dyn Specie>> {
-        let ix = if x < 0 {
-            x + self.width as i8
-        } else if x >= self.width as i8 {
-            x - self.width as i8
-        } else {
-            x
-        };
+    pub fn count(&self) -> (u16, u16) {
+        let mut fishes: u16 = 0;
+        let mut sharks: u16 = 0;
 
-        let iy = if y < 0 {
-            y + self.height as i8
-        } else if y >= self.height as i8 {
-            y - self.height as i8
-        } else {
-            y
-        };
+        for y in 0..self.height as usize {
+            for x in 0..self.width as usize {
+                if let Some(specie) = self.population[y][x].clone() {
+                    if specie.can_be_eaten() {
+                        fishes += 1;
+                    } else {
+                        sharks += 1;
+                    }
+                }
+            }
+        }
+        (fishes, sharks)
+    }
+
+    fn safe_get(&self, x: i8, y: i8, population: &Vec<Vec<Option<Box<dyn Specie>>>>) -> Option<Box<dyn Specie>> {
+        let (ix, iy) = self.safe_position(x, y);
 
         if let Some(s) = population[iy as usize][ix as usize].as_ref() {
             Some(s.clone())
@@ -342,6 +347,12 @@ impl Wator {
     }
 
     fn safe_put(&self, x: i8, y: i8, population: &mut Vec<Vec<Option<Box<dyn Specie>>>>, specie: Box<dyn Specie>) {
+        let (ix, iy) = self.safe_position(x, y);
+
+        population[iy as usize][ix as usize] = Some(specie.clone());
+    }
+
+    fn safe_position(&self, x: i8, y: i8) -> (i8, i8) {
         let ix = if x < 0 {
             x + self.width as i8
         } else if x >= self.width as i8 {
@@ -349,7 +360,6 @@ impl Wator {
         } else {
             x
         };
-
         let iy = if y < 0 {
             y + self.height as i8
         } else if y >= self.height as i8 {
@@ -357,15 +367,17 @@ impl Wator {
         } else {
             y
         };
-
-        population[iy as usize][ix as usize] = Some(specie.clone());
+        (ix, iy)
     }
 
     pub fn print<W: Write>(&self, term: &mut W, border: bool) -> io::Result<()> {
+        let (fishes, sharks) = self.count();
+        write!(term, "Fishes: {}  Sharks: {}\n\r", fishes, sharks)?;
+
         if border { self.print_border_row(term)?; }
 
         for row in &self.population {
-            if border { write!(term, "{} ", color::Bg(color::White))?; }
+            if border { write!(term, "{} {}", color::Bg(color::White), termion::style::Reset)?; }
 
             for s in row {
                 if let Some(specie) = s {

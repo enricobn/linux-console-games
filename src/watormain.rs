@@ -19,20 +19,35 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
 
     stdout.flush()?;
 
-    let mut wator = Wator::new(80, 20);
+    let mut wator = Wator::new(80, 40);
 
     let mut stdin = async_stdin().bytes();
 
+    let mut time: u32 = 0;
+
     loop {
+        time += 1;
+
         print(&mut stdout, &mut wator)?;
 
         let b = stdin.next();
         if let Some(Ok(b'q')) = b {
             break;
         }
-        thread::sleep(Duration::from_millis(10));
+        thread::sleep(Duration::from_millis(50));
         wator = wator.next();
+
+        let (fishes, sharks) = wator.count();
+
+        if fishes == 0 || sharks == 0 {
+            break;
+        }
     }
+
+    write!(stdout,
+           "{}Game over after {} cycles.\n\r",
+           termion::clear::All,
+           time)?;
 
     Result::Ok(())
 }
@@ -42,5 +57,5 @@ fn print<W: Write>(mut stdout: &mut W, wator: &Wator) -> io::Result<()> {
            "{}{}",
            termion::clear::All,
            termion::cursor::Goto(1, 1))?;
-    wator.print(&mut stdout, false)
+    wator.print(&mut stdout, true)
 }
