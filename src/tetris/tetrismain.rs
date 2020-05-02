@@ -1,9 +1,12 @@
 use std::{io, thread};
-use std::io::Write;
 use std::io::Read;
+use std::io::Write;
 use std::time::Duration;
 
 use termion::async_stdin;
+use termion::event::Key;
+use termion::event::Key::Char;
+use termion::input::TermRead;
 
 use crate::common::persistence::HighScores;
 use crate::tetris::tetris::Tetris;
@@ -22,7 +25,7 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
 
     let mut tetris = Tetris::new(10, 20);
 
-    let mut stdin = async_stdin().bytes();
+    let mut stdin = async_stdin().keys();
 
     let mut score: u32 = 0;
 
@@ -32,37 +35,33 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
         for _i in 0..40 {
             let mut key_pressed = false;
 
-            let b = stdin.next();
-            if let Some(Ok(b'q')) = b {
-                break 'outer;
-            } else if let Some(Ok(b' ')) = b {
-                let (packed, new_tetris) = tetris.fall()?;
-                score += packed as u32 * 1000;
-                tetris = new_tetris;
-                key_pressed = true;
-            } else if let Some(Ok(27)) = b {
-                let b = stdin.next();
-                if let Some(Ok(91)) = b {
-                    let b = stdin.next();
-                    if let Some(Ok(68)) = b {
-                        tetris = tetris.left()?;
-                        key_pressed = true;
-                    } else if let Some(Ok(67)) = b {
-                        tetris = tetris.right()?;
-                        key_pressed = true;
-                    } else if let Some(Ok(65)) = b {
-                        tetris = tetris.rotate_left()?;
-                        key_pressed = true;
-                    } else if let Some(Ok(66)) = b {
-                        tetris = tetris.rotate_right()?;
-                        key_pressed = true;
-                    }
+            if let Some(keyOrError) = stdin.next() {
+                let key = keyOrError?;
+
+                if let Char('q') = key {
+                    break 'outer;
+                } else if let Char(' ') = key {
+                    let (packed, new_tetris) = tetris.fall()?;
+                    score += packed as u32 * 1000;
+                    tetris = new_tetris;
+                    key_pressed = true;
+                } else if let Key::Left = key {
+                    tetris = tetris.left()?;
+                    key_pressed = true;
+                } else if let Key::Right = key {
+                    tetris = tetris.right()?;
+                    key_pressed = true;
+                } else if let Key::Up = key {
+                    tetris = tetris.rotate_left()?;
+                    key_pressed = true;
+                } else if let Key::Down = key {
+                    tetris = tetris.rotate_right()?;
+                    key_pressed = true;
                 }
             }
 
             if key_pressed {
                 while stdin.next().is_some() {}
-
                 print(&mut stdout, &mut tetris, score)?;
             }
 
@@ -75,7 +74,7 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
             score += packed as u32 * 1000;
             print(&mut stdout, &mut tetris, score)?;
         } else {
-            // game as ended
+            // game is ended
             scores.add(score);
             scores.save()?;
 
