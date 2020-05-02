@@ -14,6 +14,7 @@ use crate::wator::watormain;
 use crate::tetris::tetrismain;
 
 mod common;
+mod snake;
 mod tetris;
 mod wator;
 

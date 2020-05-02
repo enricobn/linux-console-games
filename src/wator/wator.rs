@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::io;
 use std::io::Write;
 use termion::color;
+use crate::common::point::Direction;
 
 trait Specie {
     fn mv(&self, north: Option<Box<dyn Specie>>,
@@ -27,17 +28,9 @@ impl Clone for Box<dyn Specie>
     }
 }
 
-#[derive(Clone, Debug)]
-enum Movement {
-    North,
-    South,
-    East,
-    West,
-}
-
 struct MvResult {
     specie: Option<Box<dyn Specie>>,
-    movement: Option<Movement>,
+    direction: Option<Direction>,
     child: bool,
 }
 
@@ -70,22 +63,22 @@ impl Specie for Fish {
             life = 0;
         }
 
-        let mut possible_movements: Vec<Movement> = Vec::new();
+        let mut possible_movements: Vec<Direction> = Vec::new();
 
         if let None = north {
-            possible_movements.push(Movement::North)
+            possible_movements.push(Direction::North)
         }
 
         if let None = south {
-            possible_movements.push(Movement::South)
+            possible_movements.push(Direction::South)
         }
 
         if let None = west {
-            possible_movements.push(Movement::West)
+            possible_movements.push(Direction::West)
         }
 
         if let None = east {
-            possible_movements.push(Movement::East)
+            possible_movements.push(Direction::East)
         }
 
         let movement = if possible_movements.is_empty() {
@@ -96,7 +89,7 @@ impl Specie for Fish {
         };
 
         let me = Fish { life };
-        MvResult { specie: Some(Box::new(me)), movement, child }
+        MvResult { specie: Some(Box::new(me)), direction: movement, child }
     }
 
     fn c(&self) -> char {
@@ -142,41 +135,41 @@ impl Specie for Shark {
         let mut energy = self.energy - 1;
 
         if energy == 0 {
-            return MvResult { specie: None, movement: None, child: false };
+            return MvResult { specie: None, direction: None, child: false };
         }
 
-        let mut possible_movements: Vec<Movement> = Vec::new();
-        let mut possible_eats: Vec<Movement> = Vec::new();
+        let mut possible_movements: Vec<Direction> = Vec::new();
+        let mut possible_eats: Vec<Direction> = Vec::new();
 
         if let None = north {
-            possible_movements.push(Movement::North)
+            possible_movements.push(Direction::North)
         } else if let Some(s) = north {
             if s.can_be_eaten() {
-                possible_eats.push(Movement::North)
+                possible_eats.push(Direction::North)
             }
         }
 
         if let None = south {
-            possible_movements.push(Movement::South)
+            possible_movements.push(Direction::South)
         } else if let Some(s) = south {
             if s.can_be_eaten() {
-                possible_eats.push(Movement::South)
+                possible_eats.push(Direction::South)
             }
         }
 
         if let None = west {
-            possible_movements.push(Movement::West)
+            possible_movements.push(Direction::West)
         } else if let Some(s) = west {
             if s.can_be_eaten() {
-                possible_eats.push(Movement::West)
+                possible_eats.push(Direction::West)
             }
         }
 
         if let None = east {
-            possible_movements.push(Movement::East)
+            possible_movements.push(Direction::East)
         } else if let Some(s) = east {
             if s.can_be_eaten() {
-                possible_eats.push(Movement::East)
+                possible_eats.push(Direction::East)
             }
         }
 
@@ -195,7 +188,7 @@ impl Specie for Shark {
 
         let me = Shark { life, energy };
 
-        MvResult { specie: Some(Box::new(me)), movement, child }
+        MvResult { specie: Some(Box::new(me)), direction: movement, child }
     }
 
     fn c(&self) -> char {
@@ -286,20 +279,20 @@ impl Wator {
                     let movement_result = specie.mv(north, south, east, west);
 
                     if let Some(specie) = movement_result.specie {
-                        if let Some(mv) = movement_result.movement {
+                        if let Some(mv) = movement_result.direction {
                             if movement_result.child {
                                 population[y][x] = Some(specie.child());
                             }
 
                             match mv {
-                                Movement::North => self.safe_put(x as i8, y as i8 - 1, &mut population,
+                                Direction::North => self.safe_put(x as i8, y as i8 - 1, &mut population,
+                                                                  specie),
+                                Direction::South => self.safe_put(x as i8, y as i8 + 1, &mut population,
+                                                                  specie),
+                                Direction::West => self.safe_put(x as i8 - 1, y as i8, &mut population,
                                                                  specie),
-                                Movement::South => self.safe_put(x as i8, y as i8 + 1, &mut population,
-                                                                 specie),
-                                Movement::West => self.safe_put(x as i8 - 1, y as i8, &mut population,
-                                                                specie),
-                                Movement::East => self.safe_put(x as i8 + 1, y as i8, &mut population,
-                                                                specie)
+                                Direction::East => self.safe_put(x as i8 + 1, y as i8, &mut population,
+                                                                 specie)
                             }
                         } else {
                             population[y][x] = Some(specie.clone());

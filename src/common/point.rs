@@ -24,4 +24,21 @@ impl Point {
     pub fn up(&self) -> Point {
         Point::new(self.x, self.y - 1)
     }
+
+    pub fn mv(&self, direction: &Direction) -> Point {
+        match direction {
+            Direction::North => self.up(),
+            Direction::South => self.down(),
+            Direction::East => self.right(),
+            Direction::West => self.left()
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum Direction {
+    North,
+    South,
+    East,
+    West,
 }
