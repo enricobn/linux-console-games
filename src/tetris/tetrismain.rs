@@ -35,8 +35,8 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
         for _i in 0..40 {
             let mut key_pressed = false;
 
-            if let Some(keyOrError) = stdin.next() {
-                let key = keyOrError?;
+            if let Some(key_or_error) = stdin.next() {
+                let key = key_or_error?;
 
                 if let Char('q') = key {
                     break 'outer;
@@ -84,9 +84,7 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
     write!(stdout,
            "{}Game over! Score: {}  \n\r",
            termion::clear::All,
-           score)?;
-
-    Result::Ok(())
+           score)
 }
 
 fn print<W: Write>(mut stdout: &mut W, tetris: &mut Tetris, score: u32) -> io::Result<()> {

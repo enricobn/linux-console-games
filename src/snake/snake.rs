@@ -9,7 +9,7 @@ pub struct Snake {
 }
 
 impl Snake {
-    fn new(x: i8, y: i8, direction: Direction) -> Snake {
+    pub fn new(x: i8, y: i8, direction: Direction) -> Snake {
         Snake { points: vec!(Point::new(x, y)), direction }
     }
 
@@ -21,16 +21,23 @@ impl Snake {
         &self.points
     }
 
+    pub fn last(&self) -> &Point {
+        self.points.last().unwrap()
+    }
+
     pub fn mv(&self, direction: Direction) -> Snake {
         Snake { points: self.points.clone(), direction }
     }
 
-    pub fn next(&self) -> Snake {
+    pub fn next(&self, eat: bool) -> Snake {
         let last = self.points.last().unwrap();
 
         let point = last.mv(&self.direction);
-
         let mut points = self.points.clone();
+
+        if !eat {
+            points.remove(0);
+        }
 
         points.push(point);
 

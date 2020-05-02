@@ -33,6 +33,15 @@ impl Point {
             Direction::West => self.left()
         }
     }
+
+    pub fn mv_in_opposite(&self, direction: &Direction) -> Point {
+        match direction {
+            Direction::North => self.down(),
+            Direction::South => self.up(),
+            Direction::East => self.left(),
+            Direction::West => self.right()
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

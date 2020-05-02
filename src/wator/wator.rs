@@ -1,7 +1,6 @@
 use rand::Rng;
 use std::borrow::Borrow;
 use std::cell::Ref;
-use std::collections::HashMap;
 use std::io;
 use std::io::Write;
 use termion::color;
