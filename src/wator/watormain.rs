@@ -5,9 +5,7 @@ use std::time::Duration;
 
 use termion::async_stdin;
 
-use crate::persistence::HighScores;
-use crate::tetris::Tetris;
-use crate::wator::Wator;
+use crate::wator::wator::Wator;
 
 pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
     write!(stdout,

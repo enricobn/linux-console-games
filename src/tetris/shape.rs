@@ -1,8 +1,8 @@
 use std::f32::consts::PI;
 
-use crate::common::Point;
-use crate::consolecolor::Color;
-use crate::grid::Grid;
+use crate::common::point::Point;
+use crate::common::consolecolor::Color;
+use crate::common::grid::Grid;
 
 #[derive(Clone)]
 pub struct Shape {

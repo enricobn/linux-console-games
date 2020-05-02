@@ -3,8 +3,8 @@ use std::io;
 
 use termion::color;
 
-use crate::consolecolor::Color;
-use crate::common::Point;
+use crate::common::point::Point;
+use crate::common::consolecolor::Color;
 
 #[derive(Clone)]
 pub struct Grid {

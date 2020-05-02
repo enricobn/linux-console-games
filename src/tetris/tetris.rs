@@ -4,9 +4,9 @@ use std::io::Write;
 use rand::prelude::*;
 use termion::color;
 
-use crate::common::Point;
-use crate::grid::Grid;
-use crate::shape::Shape;
+use crate::tetris::shape::Shape;
+use crate::common::point::Point;
+use crate::common::grid::Grid;
 
 const STATE_INIT: u8 = 0;
 const STATE_NORMAL: u8 = 1;

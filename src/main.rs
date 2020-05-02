@@ -10,17 +10,12 @@ use std::io::{stdout, Write};
 
 use termion::color;
 use termion::raw::IntoRawMode;
+use crate::wator::watormain;
+use crate::tetris::tetrismain;
 
-mod consolecolor;
 mod common;
-mod grid;
-mod menu;
-mod persistence;
-mod shape;
 mod tetris;
-mod tetrismain;
 mod wator;
-mod watormain;
 
 // from https://stackoverflow.com/questions/55755552/what-is-the-rust-equivalent-to-a-try-catch-statement
 macro_rules! attempt { // `try` is a reserved keyword
@@ -48,7 +43,7 @@ fn main() {
 
     let menu = vec!("Tetris", "Wator");
 
-    let choice = menu::choose(&mut stdout, &menu, 1, 3).unwrap();
+    let choice = common::menu::choose(&mut stdout, &menu, 1, 3).unwrap();
 
     if let Some(index) = choice {
         attempt! {{

@@ -5,8 +5,8 @@ use std::time::Duration;
 
 use termion::async_stdin;
 
-use crate::persistence::HighScores;
-use crate::tetris::Tetris;
+use crate::common::persistence::HighScores;
+use crate::tetris::tetris::Tetris;
 
 pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
     let mut scores = HighScores::read(".tetris")?;

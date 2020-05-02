@@ -1,13 +1,10 @@
+use rand::Rng;
 use std::borrow::Borrow;
 use std::cell::Ref;
 use std::collections::HashMap;
 use std::io;
 use std::io::Write;
-
-use rand::Rng;
 use termion::color;
-
-use crate::common::Point;
 
 trait Specie {
     fn mv(&self, north: Option<Box<dyn Specie>>,
@@ -63,7 +60,6 @@ const SHARKS: u16 = 10;
 const FISHES: u16 = 100;
 
 impl Specie for Fish {
-
     fn mv(&self, north: Option<Box<dyn Specie>>, south: Option<Box<dyn Specie>>,
           east: Option<Box<dyn Specie>>, west: Option<Box<dyn Specie>>) -> MvResult {
         let mut life = self.life + 1;
@@ -133,7 +129,6 @@ impl Shark {
 }
 
 impl Specie for Shark {
-
     fn mv(&self, north: Option<Box<dyn Specie>>, south: Option<Box<dyn Specie>>,
           east: Option<Box<dyn Specie>>, west: Option<Box<dyn Specie>>) -> MvResult {
         let mut life = self.life + 1;
@@ -227,7 +222,6 @@ pub struct Wator {
 }
 
 impl Wator {
-
     pub fn new(width: u8, height: u8) -> Wator {
         let mut population: Vec<Vec<Option<Box<dyn Specie>>>> = vec![];
 
