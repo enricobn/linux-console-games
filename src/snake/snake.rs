@@ -2,7 +2,6 @@ use std::io;
 use std::io::Write;
 
 use crate::common::point::{Direction, Point};
-use termion::color;
 use crate::common::printutils::print_border;
 
 pub struct Snake {

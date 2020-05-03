@@ -13,7 +13,9 @@ use termion::raw::IntoRawMode;
 use crate::wator::watormain;
 use crate::tetris::tetrismain;
 use crate::snake::snakemain;
+use crate::arkanoid::arkanoidmain;
 
+mod arkanoid;
 mod common;
 mod snake;
 mod tetris;
@@ -43,7 +45,7 @@ fn main() {
            color::Bg(color::Red),
            termion::style::Reset).unwrap();
 
-    let menu = vec!("Tetris", "Wator", "Snake");
+    let menu = vec!("Tetris", "Wator", "Snake", "Arkanoid");
 
     let choice = common::menu::choose(&mut stdout, &menu, 1, 3).unwrap();
 
@@ -74,6 +76,8 @@ fn run<W: Write>(mut stdout: &mut W, index: u8) -> io::Result<()> {
         watormain::run(&mut stdout)
     } else if index == 2 {
         snakemain::run(&mut stdout)
+    } else if index == 3 {
+        arkanoidmain::run(stdout)
     } else {
         Result::Ok(())
     }

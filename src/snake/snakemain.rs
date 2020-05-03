@@ -3,7 +3,7 @@ use std::io::Write;
 
 use crate::common::point::{Direction, Point};
 use crate::snake::snake::Snake;
-use termion::{async_stdin, color};
+use termion::async_stdin;
 use termion::event::Key::Char;
 use termion::event::Key;
 use std::time::Duration;
@@ -88,16 +88,6 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
 
             break 'outer;
         }
-
-        /*
-        } else {
-            // game is ended
-            scores.add(score);
-            scores.save()?;
-
-            break 'outer;
-        }
-        */
     }
 
     write!(stdout,

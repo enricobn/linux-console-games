@@ -1,6 +1,4 @@
 use rand::Rng;
-use std::borrow::Borrow;
-use std::cell::Ref;
 use std::io;
 use std::io::Write;
 use termion::color;
@@ -366,7 +364,7 @@ impl Wator {
             if border { write!(term, "{} {}", color::Bg(color::White), termion::style::Reset)?; }
 
             for s in row {
-                if let Some(specie) = s {
+                if let Some(_specie) = s {
                     write!(term, "{}", s.as_ref().unwrap().c())?;
                 } else {
                     write!(term, " ")?;

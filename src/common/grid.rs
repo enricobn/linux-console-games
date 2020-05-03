@@ -1,10 +1,10 @@
-use std::io::{Error, Write, ErrorKind};
+use std::io::{Error, ErrorKind, Write};
 use std::io;
 
 use termion::color;
 
-use crate::common::point::Point;
 use crate::common::consolecolor::Color;
+use crate::common::point::Point;
 
 #[derive(Clone)]
 pub struct Grid {
@@ -52,7 +52,11 @@ impl Grid {
             for color in row {
                 write!(term, "{}  ", color::Bg(*color))?;
             }
-            if border { write!(term, "{} {}\n\r", color::Bg(color::White), termion::style::Reset)?; } else { write!(term, "{}\n\r", termion::style::Reset)?; }
+            if border {
+                write!(term, "{} {}\n\r", color::Bg(color::White), termion::style::Reset)?;
+            } else {
+                write!(term, "{}\n\r", termion::style::Reset)?;
+            }
         }
 
         if border { self.print_border_row(term)?; }
