@@ -3,7 +3,7 @@ use std::io::Write;
 
 use crate::common::point::{Direction, Point};
 use crate::snake::snake::Snake;
-use termion::async_stdin;
+use termion::{async_stdin, color};
 use termion::event::Key::Char;
 use termion::event::Key;
 use std::time::Duration;
@@ -12,11 +12,11 @@ use rand::Rng;
 use crate::common::persistence::HighScores;
 
 const FOOD: u8 = 10;
-const WIDTH: u8 = 80;
-const HEIGHT: u8 = 40;
+const WIDTH: u8 = 20;
+const HEIGHT: u8 = 20;
 
 pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
-    let mut snake = Snake::new(10, 10, Direction::East);
+    let mut snake = Snake::new(WIDTH, HEIGHT, Direction::East);
     let mut score: u32 = 0;
     let mut stdin = async_stdin().keys();
     let mut food: Vec<Point> = vec!();
@@ -65,23 +65,29 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
             thread::sleep(Duration::from_millis(10));
         }
 
-        let next_snake = snake.next(false);
+        if let Some(next_snake) = snake.next(false) {
+            let food_found = food.iter().enumerate()
+                .find(|(i, point)| point.x == next_snake.last().x && point.y == next_snake.last().y)
+                .map(|(i, point)| i);
 
-        let food_found = food.iter().enumerate()
-            .find(|(i, point)| point.x == next_snake.last().x && point.y == next_snake.last().y)
-            .map(|(i, point)| i);
+            if let Some(food_index) = food_found {
+                food.remove(food_index);
+                food.push(Point::new(rng.gen_range(0, WIDTH) as i8,
+                                     rng.gen_range(0, HEIGHT) as i8));
+                snake = snake.next(true).unwrap();
+                score += 10;
+            } else {
+                snake = next_snake;
+            }
 
-        if let Some(food_index) = food_found {
-            food.remove(food_index);
-            food.push(Point::new(rng.gen_range(0, WIDTH) as i8,
-                                 rng.gen_range(0, HEIGHT) as i8));
-            snake = snake.next(true);
-            score += 10;
+            print(&mut stdout, &snake, &food, score)?;
         } else {
-            snake = next_snake;
-        }
+            // game is ended
+            scores.add(score);
+            scores.save()?;
 
-        print(&mut stdout, &snake, &food, score)?;
+            break 'outer;
+        }
 
         /*
         } else {
@@ -108,10 +114,10 @@ fn print<W: Write>(mut stdout: &mut W, snake: &Snake, food: &Vec<Point>, score: 
            score)?;
 
     for point in food.iter() {
-        write!(stdout, "{}.", termion::cursor::Goto(point.x as u16, point.y as u16))?;
+        write!(stdout, "{}.", termion::cursor::Goto(point.x as u16 + 2, point.y as u16 + 3))?;
     }
 
-    snake.print(&mut stdout, false);
+    snake.print(&mut stdout, 1, 2);
 
     stdout.flush()
 }

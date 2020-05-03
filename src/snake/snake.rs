@@ -2,15 +2,19 @@ use std::io;
 use std::io::Write;
 
 use crate::common::point::{Direction, Point};
+use termion::color;
+use crate::common::printutils::print_border;
 
 pub struct Snake {
+    width: u8,
+    height: u8,
     direction: Direction,
     points: Vec<Point>,
 }
 
 impl Snake {
-    pub fn new(x: i8, y: i8, direction: Direction) -> Snake {
-        Snake { points: vec!(Point::new(x, y)), direction }
+    pub fn new(width: u8, height: u8, direction: Direction) -> Snake {
+        Snake { width, height, points: vec!(Point::new(width as i8 / 2, height as i8 / 2)), direction }
     }
 
     pub fn direction(&self) -> &Direction {
@@ -26,13 +30,20 @@ impl Snake {
     }
 
     pub fn mv(&self, direction: Direction) -> Snake {
-        Snake { points: self.points.clone(), direction }
+        Snake { width: self.width, height: self.height, points: self.points.clone(), direction }
     }
 
-    pub fn next(&self, eat: bool) -> Snake {
+    pub fn next(&self, eat: bool) -> Option<Snake> {
         let last = self.points.last().unwrap();
 
         let point = last.mv(&self.direction);
+
+        if point.x < 0 || point.x >= self.width as i8 ||
+            point.y < 0 || point.y >= self.height as i8 ||
+            self.points.iter().any(|p| p.x == point.x && p.y == point.y) {
+            return None;
+        }
+
         let mut points = self.points.clone();
 
         if !eat {
@@ -41,13 +52,15 @@ impl Snake {
 
         points.push(point);
 
-        Snake { points, direction: self.direction.clone() }
+        Some(Snake { width: self.width, height: self.height, points, direction: self.direction.clone() })
     }
 
-    pub fn print<W: Write>(&self, term: &mut W, border: bool) -> io::Result<()> {
+    pub fn print<W: Write>(&self, term: &mut W, x: u16, y: u16) -> io::Result<()> {
         for point in self.points.iter() {
-            write!(term, "{}#", termion::cursor::Goto(point.x as u16, point.y as u16))?;
+            write!(term, "{}#", termion::cursor::Goto(point.x as u16 + x + 1, point.y as u16 + y + 1))?;
         }
-        Result::Ok(())
+        print_border(term, x, y, self.width as u16 + 2, self.height as u16 + 2)
     }
+
+
 }
