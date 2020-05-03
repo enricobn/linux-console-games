@@ -6,6 +6,7 @@ use termion::event::Key;
 use termion::async_stdin;
 use termion::input::TermRead;
 use std::time::Duration;
+use crate::common::printutils::print_border;
 
 const WIDTH: u8 = 40;
 const HEIGHT: u8 = 20;
@@ -34,19 +35,27 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
 
             if key_pressed {
                 while stdin.next().is_some() {}
-                arkanoid.print(stdout, 1, 1)?;
-                stdout.flush()?;
+                print(stdout, &arkanoid)?;
             }
 
-            arkanoid = arkanoid.next(0.05);
-            arkanoid.print(stdout, 1, 1)?;
-            stdout.flush()?;
+            if let Some(ark) = arkanoid.next(0.05) {
+                arkanoid = ark;
+                print(stdout, &arkanoid)?;
+            } else {
+                break 'outer
+            }
 
             thread::sleep(Duration::from_millis(5));
         }
 
-
     }
     Result::Ok(())
 
+}
+
+fn print<W: Write>(term: &mut W, arkanoid: &Arkanoid) -> io::Result<()> {
+    write!(term, "{}", termion::clear::All)?;
+    print_border(term, 1, 1, WIDTH as u16 + 2, HEIGHT as u16 + 3)?;
+    arkanoid.print(term, 1, 1)?;
+    term.flush()
 }

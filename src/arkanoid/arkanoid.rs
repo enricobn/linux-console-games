@@ -50,21 +50,29 @@ impl Arkanoid {
         }
     }
 
-    pub fn next(&self, delta: f32) -> Arkanoid {
+    pub fn next(&self, delta: f32) -> Option<Arkanoid> {
         let mut ball = self.ball.next(delta);
 
         if ball.y >= self.bar.y as f32 && ball.x >= self.bar.x as f32 && ball.x <= (self.bar.x + BAR_WIDTH) as f32 {
-            ball = Ball { x: ball.x, y: ball.y, angle: -self.ball.angle };
+            ball = Ball { x: self.ball.x, y: self.ball.y, angle: -self.ball.angle };
             ball = ball.next(delta)
+        } else if ball.x < 0.0 || ball.x >= self.width as f32 {
+            ball = Ball { x: self.ball.x, y: self.ball.y, angle: PI - self.ball.angle };
+            ball = ball.next(delta)
+        } else if ball.y < 0.0 {
+            ball = Ball { x: self.ball.x, y: self.ball.y, angle: -self.ball.angle };
+            ball = ball.next(delta)
+        } else if ball.y >= self.bar.y as f32 {
+            return None;
         }
 
-        Arkanoid {
+        Some(Arkanoid {
             width: self.width,
             height: self.height,
             ball,
             bar: self.bar.clone(),
             bricks: self.bricks.clone(),
-        }
+        })
     }
 
     pub fn right(&self) -> Arkanoid {
@@ -101,8 +109,7 @@ impl Arkanoid {
 
     pub fn print<W: Write>(&self, term: &mut W, x: u16, y: u16) -> io::Result<()> {
         let bar = " ".repeat(BAR_WIDTH as usize);
-        write!(term, "{}{}{}{}",
-               termion::clear::All,
+        write!(term, "{}{}{}",
                color::Bg(color::White),
                termion::cursor::Goto(self.bar.x as u16 + x + 1, self.bar.y as u16 + y + 1),
                bar)?;
