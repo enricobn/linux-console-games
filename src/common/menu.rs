@@ -4,7 +4,7 @@ use std::io::{Write, stdin};
 use termion::event::Key;
 use termion::input::TermRead;
 
-pub fn choose<W: Write>(mut stdout: &mut W, menu: &Vec<&str>, x: u16, y: u16) -> io::Result<Option<u8>> {
+pub fn choose<W: Write>(stdout: &mut W, menu: &Vec<&str>, x: u16, y: u16) -> io::Result<Option<u8>> {
     let mut index : u8 = 0;
 
     'outer: loop {

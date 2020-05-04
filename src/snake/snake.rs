@@ -16,14 +16,6 @@ impl Snake {
         Snake { width, height, points: vec!(Point::new(width as i8 / 2, height as i8 / 2)), direction }
     }
 
-    pub fn direction(&self) -> &Direction {
-        &self.direction
-    }
-
-    pub fn points(&self) -> &Vec<Point> {
-        &self.points
-    }
-
     pub fn last(&self) -> &Point {
         self.points.last().unwrap()
     }

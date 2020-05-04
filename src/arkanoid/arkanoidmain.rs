@@ -11,7 +11,7 @@ use crate::common::printutils::print_border;
 const WIDTH: u8 = 40;
 const HEIGHT: u8 = 20;
 
-pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
+pub fn run<W: Write>(stdout: &mut W) -> io::Result<()> {
     let mut stdin = async_stdin().keys();
     let mut arkanoid = Arkanoid::new(WIDTH, HEIGHT);
 

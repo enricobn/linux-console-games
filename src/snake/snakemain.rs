@@ -67,8 +67,8 @@ pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
 
         if let Some(next_snake) = snake.next(false) {
             let food_found = food.iter().enumerate()
-                .find(|(i, point)| point.x == next_snake.last().x && point.y == next_snake.last().y)
-                .map(|(i, point)| i);
+                .find(|(_i, point)| point.x == next_snake.last().x && point.y == next_snake.last().y)
+                .map(|(i, _point)| i);
 
             if let Some(food_index) = food_found {
                 food.remove(food_index);
@@ -107,7 +107,7 @@ fn print<W: Write>(mut stdout: &mut W, snake: &Snake, food: &Vec<Point>, score: 
         write!(stdout, "{}.", termion::cursor::Goto(point.x as u16 + 2, point.y as u16 + 3))?;
     }
 
-    snake.print(&mut stdout, 1, 2);
+    snake.print(&mut stdout, 1, 2)?;
 
     stdout.flush()
 }

@@ -1,7 +1,8 @@
 Doing
 ------
 - panicking on debug mode
-- Tetris
+- arkanoid
+  - bricks
 
 Next
 -----
