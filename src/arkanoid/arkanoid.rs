@@ -51,8 +51,18 @@ impl Arkanoid {
         let mut bricks: Vec<Brick> = Vec::new();
 
         for i in 0..bricks_count {
-            bricks.push(Brick { position: Point::new(margin + i as i8 * BRICK_WIDTH, 5),
-            color: Color::Red })
+            bricks.push(Brick {
+                position: Point::new(margin + i as i8 * BRICK_WIDTH, 5),
+                color: Color::Red,
+            });
+            bricks.push(Brick {
+                position: Point::new(margin + i as i8 * BRICK_WIDTH, 6),
+                color: Color::Blue,
+            });
+            bricks.push(Brick {
+                position: Point::new(margin + i as i8 * BRICK_WIDTH, 7),
+                color: Color::Magenta,
+            });
         }
 
         Arkanoid {
@@ -91,7 +101,7 @@ impl Arkanoid {
         if !field_rebound {
             let brick_collisions: Vec<usize> =
                 self.bricks.iter().enumerate()
-                    .filter(|(_i, brick)| self.ball.collides(&brick.position, BRICK_WIDTH as u8) )
+                    .filter(|(_i, brick)| self.ball.collides(&brick.position, BRICK_WIDTH as u8))
                     .map(|(i, _brick)| i)
                     .collect();
 
@@ -117,7 +127,7 @@ impl Arkanoid {
     pub fn right(&self) -> Arkanoid {
         let point = self.bar.right();
 
-        if point.x + BAR_WIDTH  > self.width  as i8{
+        if point.x + BAR_WIDTH > self.width as i8 {
             self.clone()
         } else {
             Arkanoid {

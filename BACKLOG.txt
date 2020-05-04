@@ -2,7 +2,6 @@ Doing
 ------
 - panicking on debug mode
 - arkanoid
-  - bricks
 
 Next
 -----
