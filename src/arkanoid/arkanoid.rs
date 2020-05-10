@@ -11,7 +11,7 @@ const BAR_WIDTH: i8 = 5;
 const BRICK_WIDTH: i8 = 4;
 
 #[derive(Clone)]
-struct Brick {
+pub struct Brick {
     pub position: Point,
     pub color: Color,
 }
@@ -74,7 +74,7 @@ impl Arkanoid {
         }
     }
 
-    pub fn next(&self, delta: f32) -> Option<Arkanoid> {
+    pub fn next(&self, delta: f32) -> Option<(Arkanoid, Vec<Brick>)> {
         let mut ball = self.ball.next(delta);
 
         let mut field_rebound = false;
@@ -95,8 +95,8 @@ impl Arkanoid {
             return None;
         }
 
-
         let mut bricks = self.bricks.clone();
+        let mut removed_bricks: Vec<Brick> = Vec::new();
 
         if !field_rebound {
             let brick_collisions: Vec<usize> =
@@ -106,7 +106,7 @@ impl Arkanoid {
                     .collect();
 
             for collision in brick_collisions.iter() {
-                bricks.remove(*collision);
+                removed_bricks.push(bricks.remove(*collision));
             }
 
             if !brick_collisions.is_empty() {
@@ -115,13 +115,13 @@ impl Arkanoid {
             }
         }
 
-        Some(Arkanoid {
+        Some((Arkanoid {
             width: self.width,
             height: self.height,
             ball,
             bar: self.bar.clone(),
             bricks,
-        })
+        }, removed_bricks))
     }
 
     pub fn right(&self) -> Arkanoid {

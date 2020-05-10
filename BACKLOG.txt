@@ -4,4 +4,5 @@ Doing
 
 Next
 -----
-- Arkanoid score
+- show high scores
+- press any key and menu after game need to press an extra key
