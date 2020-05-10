@@ -1,53 +1,73 @@
 use std::{io, thread};
-use std::io::Read;
+use std::io::{Read, Error};
 use std::io::Write;
 use std::time::Duration;
 
 use termion::async_stdin;
 
 use crate::wator::wator::Wator;
+use std::marker::PhantomData;
+use crate::Main;
+use crate::common::persistence::HighScores;
 
-pub fn run<W: Write>(mut stdout: &mut W) -> io::Result<()> {
-    write!(stdout,
-           "{}{}{}{}",
-           termion::clear::All,
-           termion::cursor::Goto(1, 1),
-           termion::cursor::Goto(1, 2),
-           termion::cursor::Hide)?;
+pub struct WatorMain<W: Write> {
+    _marker: PhantomData<W>,
+}
 
-    stdout.flush()?;
+impl <W: Write> WatorMain<W> {
+    pub fn new() -> WatorMain<W> {
+        WatorMain { _marker: PhantomData }
+    }
+}
 
-    let mut wator = Wator::new(80, 40);
+impl <W: Write> Main<W> for WatorMain<W> {
 
-    let mut stdin = async_stdin().bytes();
-
-    let mut time: u32 = 0;
-
-    loop {
-        time += 1;
-
-        print(&mut stdout, &mut wator)?;
-
-        let b = stdin.next();
-        if let Some(Ok(b'q')) = b {
-            break;
-        }
-        thread::sleep(Duration::from_millis(50));
-        wator = wator.next();
-
-        let (fishes, sharks) = wator.count();
-
-        if fishes == 0 || sharks == 0 {
-            break;
-        }
+    fn name(&self) -> &'static str {
+        "Wator"
     }
 
-    write!(stdout,
-           "{}Game over after {} cycles.\n\r",
-           termion::clear::All,
-           time)?;
+    fn run(&self, mut stdout: &mut W) -> io::Result<Option<u32>> {
+        write!(stdout,
+               "{}{}{}{}",
+               termion::clear::All,
+               termion::cursor::Goto(1, 1),
+               termion::cursor::Goto(1, 2),
+               termion::cursor::Hide)?;
 
-    Result::Ok(())
+        stdout.flush()?;
+
+        let mut wator = Wator::new(80, 40);
+
+        let mut stdin = async_stdin().bytes();
+
+        let mut time: u32 = 0;
+
+        loop {
+            time += 1;
+
+            print(&mut stdout, &mut wator)?;
+
+            let b = stdin.next();
+            if let Some(Ok(b'q')) = b {
+                return Ok(None)
+            }
+            thread::sleep(Duration::from_millis(50));
+            wator = wator.next();
+
+            let (fishes, sharks) = wator.count();
+
+            if fishes == 0 || sharks == 0 {
+                break;
+            }
+        }
+
+        Result::Ok(Some(time))
+    }
+
+    fn high_scores(&self) -> Result<HighScores, Error> {
+        HighScores::read(".wator")
+    }
+
 }
 
 fn print<W: Write>(mut stdout: &mut W, wator: &Wator) -> io::Result<()> {

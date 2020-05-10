@@ -1,7 +1,7 @@
 Doing
 ------
 - panicking on debug mode
-- arkanoid
 
 Next
 -----
+- Arkanoid score
