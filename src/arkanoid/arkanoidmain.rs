@@ -3,9 +3,9 @@ use std::io::{Error, Write};
 use std::marker::PhantomData;
 use std::time::Duration;
 
-use termion::async_stdin;
+use termion::AsyncReader;
 use termion::event::Key;
-use termion::input::TermRead;
+use termion::input::Keys;
 
 use crate::arkanoid::arkanoid::Arkanoid;
 use crate::common::persistence::HighScores;
@@ -30,8 +30,7 @@ impl<W: Write> Main<W> for ArkanoidMain<W> {
         "Arkanoid"
     }
 
-    fn run(&self, stdout: &mut W) -> io::Result<Option<u32>> {
-        let mut stdin = async_stdin().keys();
+    fn run(&self, stdout: &mut W, stdin: &mut Keys<AsyncReader>) -> io::Result<Option<u32>> {
         let mut arkanoid = Arkanoid::new(WIDTH, HEIGHT);
         let mut score: u32 = 0;
 

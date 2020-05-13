@@ -1,10 +1,11 @@
-use std::io;
-use termion::color;
-use std::io::{Write, stdin};
+use std::{io, thread};
+use termion::{color, AsyncReader};
+use std::io::Write;
 use termion::event::Key;
-use termion::input::TermRead;
+use termion::input::Keys;
+use std::time::Duration;
 
-pub fn choose<W: Write>(stdout: &mut W, menu: &Vec<&str>, x: u16, y: u16) -> io::Result<Option<u8>> {
+pub fn choose<W: Write>(stdout: &mut W, stdin: &mut Keys<AsyncReader>, menu: &Vec<&str>, x: u16, y: u16) -> io::Result<Option<u8>> {
     let mut index : i8 = 0;
 
     'outer: loop {
@@ -29,28 +30,32 @@ pub fn choose<W: Write>(stdout: &mut W, menu: &Vec<&str>, x: u16, y: u16) -> io:
 
         stdout.flush()?;
 
-        for c in stdin().lock().keys() {
-            match c.unwrap() {
-                Key::Up => {
-                    index -= 1;
-                    if index < 0 {
-                        index  = 0;
+        loop {
+            if let Some(Ok(c)) = stdin.next() {
+                match c {
+                    Key::Up => {
+                        index -= 1;
+                        if index < 0 {
+                            index = 0;
+                        }
+                        break;
                     }
-                    break;
-                }
-                Key::Down => {
-                    index += 1;
-                    if index >= menu.len() as i8 {
-                        index = menu.len() as i8 - 1;
+                    Key::Down => {
+                        index += 1;
+                        if index >= menu.len() as i8 {
+                            index = menu.len() as i8 - 1;
+                        }
+                        break;
                     }
-                    break;
-                }
-                Key::Esc => {
-                    return Result::Ok(None);
-                }
-                Key::Char('\n') => break 'outer,
-                _ => break
-            };
+                    Key::Esc => {
+                        return Result::Ok(None);
+                    }
+                    Key::Char('\n') => break 'outer,
+                    _ => break
+                };
+            }
+
+            thread::sleep(Duration::from_millis(50));
         }
     }
 

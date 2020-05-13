@@ -3,13 +3,13 @@ use std::io::Error;
 use std::io::Write;
 use std::time::Duration;
 
-use termion::async_stdin;
+use termion::AsyncReader;
 
 use crate::wator::wator::Wator;
 use std::marker::PhantomData;
 use crate::Main;
 use crate::common::persistence::HighScores;
-use termion::input::TermRead;
+use termion::input::Keys;
 use termion::event::Key;
 
 pub struct WatorMain<W: Write> {
@@ -28,7 +28,7 @@ impl <W: Write> Main<W> for WatorMain<W> {
         "Wator"
     }
 
-    fn run(&self, mut stdout: &mut W) -> io::Result<Option<u32>> {
+    fn run(&self, mut stdout: &mut W, stdin: &mut Keys<AsyncReader>) -> io::Result<Option<u32>> {
         write!(stdout,
                "{}{}{}{}",
                termion::clear::All,
@@ -39,8 +39,6 @@ impl <W: Write> Main<W> for WatorMain<W> {
         stdout.flush()?;
 
         let mut wator = Wator::new(80, 40);
-
-        let mut stdin = async_stdin().keys();
 
         let mut time: u32 = 0;
 

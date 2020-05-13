@@ -4,9 +4,9 @@ use std::marker::PhantomData;
 use std::time::Duration;
 
 use rand::Rng;
-use termion::async_stdin;
+use termion::AsyncReader;
 use termion::event::Key;
-use termion::input::TermRead;
+use termion::input::Keys;
 
 use crate::common::persistence::HighScores;
 use crate::common::point::{Direction, Point};
@@ -32,10 +32,9 @@ impl<W: Write> Main<W> for SnakeMain<W> {
         "Snake"
     }
 
-    fn run(&self, mut stdout: &mut W) -> io::Result<Option<u32>> {
+    fn run(&self, mut stdout: &mut W, stdin: &mut Keys<AsyncReader>) -> io::Result<Option<u32>> {
         let mut snake = Snake::new(WIDTH, HEIGHT, Direction::East);
         let mut score: u32 = 0;
-        let mut stdin = async_stdin().keys();
         let mut food: Vec<Point> = vec!();
         let mut rng = rand::thread_rng();
 

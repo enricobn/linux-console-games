@@ -2,10 +2,10 @@ use std::{io, thread};
 use std::io::{Write, Error};
 use std::time::Duration;
 
-use termion::async_stdin;
+use termion::AsyncReader;
 use termion::event::Key;
 use termion::event::Key::Char;
-use termion::input::TermRead;
+use termion::input::Keys;
 
 use crate::common::persistence::HighScores;
 use crate::tetris::tetris::Tetris;
@@ -28,7 +28,7 @@ impl <W: Write> Main<W> for TetrisMain<W> {
         "Tetris"
     }
 
-    fn run(&self, mut stdout: &mut W) -> io::Result<Option<u32>> {
+    fn run(&self, mut stdout: &mut W, stdin: &mut Keys<AsyncReader>) -> io::Result<Option<u32>> {
         write!(stdout,
                "{}{}q to exit, left and right arrow to move{}down to rotate clockwise, up to rotate counterclockwise.\r\n{}",
                termion::clear::All,
@@ -39,8 +39,6 @@ impl <W: Write> Main<W> for TetrisMain<W> {
         stdout.flush()?;
 
         let mut tetris = Tetris::new(10, 20);
-
-        let mut stdin = async_stdin().keys();
 
         let mut score: u32 = 0;
 
