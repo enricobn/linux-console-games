@@ -1,5 +1,5 @@
 use std::{io, thread};
-use std::io::{Read, Error};
+use std::io::Error;
 use std::io::Write;
 use std::time::Duration;
 
@@ -9,6 +9,8 @@ use crate::wator::wator::Wator;
 use std::marker::PhantomData;
 use crate::Main;
 use crate::common::persistence::HighScores;
+use termion::input::TermRead;
+use termion::event::Key;
 
 pub struct WatorMain<W: Write> {
     _marker: PhantomData<W>,
@@ -38,9 +40,11 @@ impl <W: Write> Main<W> for WatorMain<W> {
 
         let mut wator = Wator::new(80, 40);
 
-        let mut stdin = async_stdin().bytes();
+        let mut stdin = async_stdin().keys();
 
         let mut time: u32 = 0;
+
+        let mut result : io::Result<Option<u32>> = Result::Ok(None);
 
         loop {
             time += 1;
@@ -48,8 +52,8 @@ impl <W: Write> Main<W> for WatorMain<W> {
             print(&mut stdout, &mut wator)?;
 
             let b = stdin.next();
-            if let Some(Ok(b'q')) = b {
-                return Ok(None)
+            if let Some(Ok(Key::Esc)) = b {
+                break
             }
             thread::sleep(Duration::from_millis(50));
             wator = wator.next();
@@ -57,11 +61,14 @@ impl <W: Write> Main<W> for WatorMain<W> {
             let (fishes, sharks) = wator.count();
 
             if fishes == 0 || sharks == 0 {
+                result = Result::Ok(Some(time));
                 break;
             }
         }
 
-        Result::Ok(Some(time))
+        while stdin.next().is_some() { }
+
+        result
     }
 
     fn high_scores(&self) -> Result<HighScores, Error> {

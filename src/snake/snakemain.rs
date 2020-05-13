@@ -6,7 +6,6 @@ use std::time::Duration;
 use rand::Rng;
 use termion::async_stdin;
 use termion::event::Key;
-use termion::event::Key::Char;
 use termion::input::TermRead;
 
 use crate::common::persistence::HighScores;
@@ -50,15 +49,17 @@ impl<W: Write> Main<W> for SnakeMain<W> {
                termion::cursor::Hide)?;
         stdout.flush()?;
 
-        loop {
+        let mut result : io::Result<Option<u32>> = Result::Ok(None);
+
+        'outer: loop {
             for _i in 0..20 {
                 let mut key_pressed = false;
 
                 if let Some(key_or_error) = stdin.next() {
                     let key = key_or_error?;
 
-                    if let Char('q') = key {
-                        return Result::Ok(None);
+                    if let Key::Esc = key {
+                        break 'outer;
                     } else if let Key::Left = key {
                         snake = snake.mv(Direction::West);
                         key_pressed = true;
@@ -75,7 +76,6 @@ impl<W: Write> Main<W> for SnakeMain<W> {
                 }
 
                 if key_pressed {
-                    while stdin.next().is_some() {}
                     print(&mut stdout, &snake, &food, score)?;
                 }
 
@@ -99,9 +99,14 @@ impl<W: Write> Main<W> for SnakeMain<W> {
 
                 print(&mut stdout, &snake, &food, score)?;
             } else {
-                return Result::Ok(Some(score));
+                result = Result::Ok(Some(score));
+                break 'outer;
             }
         }
+
+        while stdin.next().is_some() { }
+
+        result
     }
 
     fn high_scores(&self) -> Result<HighScores, Error> {

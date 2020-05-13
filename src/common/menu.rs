@@ -29,9 +29,7 @@ pub fn choose<W: Write>(stdout: &mut W, menu: &Vec<&str>, x: u16, y: u16) -> io:
 
         stdout.flush()?;
 
-        let stdin = stdin();
-
-        for c in stdin.keys() {
+        for c in stdin().lock().keys() {
             match c.unwrap() {
                 Key::Up => {
                     index -= 1;

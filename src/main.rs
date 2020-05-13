@@ -6,18 +6,19 @@ extern crate serde_json;
 extern crate termion;
 
 use std::{io, thread};
-use std::io::{stdin, stdout, Stdout, Write};
-use std::time::Duration;
+use std::io::{stdout, Stdout, Write};
 
 use termion::color;
-use termion::input::TermRead;
+use termion::event::Key;
 use termion::raw::{IntoRawMode, RawTerminal};
 
 use crate::arkanoid::arkanoidmain::ArkanoidMain;
 use crate::common::persistence::HighScores;
+use crate::common::ioutils::wait_for_key;
 use crate::snake::snakemain::SnakeMain;
 use crate::tetris::tetrismain::TetrisMain;
 use crate::wator::watormain::WatorMain;
+use std::time::Duration;
 
 mod arkanoid;
 mod common;
@@ -93,6 +94,30 @@ fn main() {
 }
 
 fn run<W>(stdout: &mut W, main: Box<dyn Main<W>>) -> io::Result<()> where W: Write {
+    let scores = main.high_scores()?;
+
+    write!(stdout,
+           "{}{}High scores",
+           termion::clear::All,
+           termion::cursor::Goto(10, 1))?;
+
+    let mut y = 3;
+    for score in scores.entries().iter() {
+        write!(stdout,
+               "{}{}",
+               termion::cursor::Goto(10, y),
+               score.score())?;
+        y += 1;
+    }
+
+    write!(stdout,
+           "{}Press s to start.",
+           termion::cursor::Goto(1, 20))?;
+
+    stdout.flush()?;
+
+    wait_for_key(Key::Char('s'))?;
+
     let result = main.run(stdout)?;
 
     if let Some(score) = result {
@@ -102,20 +127,14 @@ fn run<W>(stdout: &mut W, main: Box<dyn Main<W>>) -> io::Result<()> where W: Wri
         scores.save()?;
 
         write!(stdout,
-               "{}{}Game over! Score: {}  \n\rPress any key.",
+               "{}{}Game over! Score: {}  \n\r\n\rPress c to continue.",
                termion::clear::All,
                termion::cursor::Goto(1, 10),
                score)?;
 
         stdout.flush()?;
 
-        'outer: loop {
-            let stdin = stdin();
-            for _c in stdin.keys() {
-                break 'outer;
-            }
-            thread::sleep(Duration::from_millis(50));
-        }
+        wait_for_key(Key::Char('c'))?;
 
         Ok(())
     } else {

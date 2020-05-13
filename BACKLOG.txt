@@ -6,3 +6,4 @@ Next
 -----
 - show high scores
 - press any key and menu after game need to press an extra key
+- confirmation on Exit

@@ -44,17 +44,19 @@ impl <W: Write> Main<W> for TetrisMain<W> {
 
         let mut score: u32 = 0;
 
+        let mut result : io::Result<Option<u32>> = Result::Ok(None);
+
         print(&mut stdout, &mut tetris, score)?;
 
-        loop {
+        'outer: loop {
             for _i in 0..40 {
                 let mut key_pressed = false;
 
                 if let Some(key_or_error) = stdin.next() {
                     let key = key_or_error?;
 
-                    if let Char('q') = key {
-                        return Result::Ok(None);
+                    if let Key::Esc = key {
+                        break 'outer;
                     } else if let Char(' ') = key {
                         let (packed, new_tetris) = tetris.fall()?;
                         score += packed as u32 * 1000;
@@ -76,7 +78,6 @@ impl <W: Write> Main<W> for TetrisMain<W> {
                 }
 
                 if key_pressed {
-                    while stdin.next().is_some() {}
                     print(&mut stdout, &mut tetris, score)?;
                 }
 
@@ -89,9 +90,14 @@ impl <W: Write> Main<W> for TetrisMain<W> {
                 score += packed as u32 * 1000;
                 print(&mut stdout, &mut tetris, score)?;
             } else {
-                return Ok(Some(score));
+                result = Ok(Some(score));
+                break 'outer;
             }
         }
+
+        while stdin.next().is_some() { }
+
+        result
     }
 
     fn high_scores(&self) -> Result<HighScores, Error> {

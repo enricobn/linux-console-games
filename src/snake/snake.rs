@@ -2,7 +2,7 @@ use std::io;
 use std::io::Write;
 
 use crate::common::point::{Direction, Point};
-use crate::common::printutils::print_border;
+use crate::common::ioutils::print_border;
 
 pub struct Snake {
     width: u8,

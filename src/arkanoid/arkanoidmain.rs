@@ -5,12 +5,11 @@ use std::time::Duration;
 
 use termion::async_stdin;
 use termion::event::Key;
-use termion::event::Key::Char;
 use termion::input::TermRead;
 
 use crate::arkanoid::arkanoid::Arkanoid;
 use crate::common::persistence::HighScores;
-use crate::common::printutils::print_border;
+use crate::common::ioutils::print_border;
 use crate::Main;
 
 const WIDTH: u8 = 40;
@@ -36,6 +35,8 @@ impl<W: Write> Main<W> for ArkanoidMain<W> {
         let mut arkanoid = Arkanoid::new(WIDTH, HEIGHT);
         let mut score: u32 = 0;
 
+        let mut result : io::Result<Option<u32>> = Result::Ok(None);
+
         'outer: loop {
             for _i in 0..20 {
                 let mut key_pressed = false;
@@ -43,8 +44,8 @@ impl<W: Write> Main<W> for ArkanoidMain<W> {
                 if let Some(key_or_error) = stdin.next() {
                     let key = key_or_error?;
 
-                    if let Char('q') = key {
-                        return Ok(None);
+                    if let Key::Esc = key {
+                        break 'outer;
                     } else if let Key::Left = key {
                         arkanoid = arkanoid.left();
                         key_pressed = true;
@@ -55,7 +56,6 @@ impl<W: Write> Main<W> for ArkanoidMain<W> {
                 }
 
                 if key_pressed {
-                    while stdin.next().is_some() {}
                     print(stdout, &arkanoid, score)?;
                 }
 
@@ -64,13 +64,17 @@ impl<W: Write> Main<W> for ArkanoidMain<W> {
                     score += 100 * removed_bricks.len() as u32;
                     print(stdout, &arkanoid, score)?;
                 } else {
+                    result = Result::Ok(Some(score));
                     break 'outer;
                 }
 
                 thread::sleep(Duration::from_millis(5));
             }
         }
-        Result::Ok(Some(score))
+
+        while stdin.next().is_some() { }
+
+        result
     }
 
     fn high_scores(&self) -> Result<HighScores, Error> {
