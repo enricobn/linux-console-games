@@ -42,8 +42,7 @@ impl SpaceInvaders {
 
     pub fn next(&self) -> Option<SpaceInvaders> {
 
-        let bullets: Vec<Pointf32> = self.bullets.iter().map(|point| point.up())
-            .filter(|bullet| bullet.y >= 0.0).collect();
+
         /*
                 let nearest = bullets.iter().enumerate()
                     .min_by(|(i, point),(i1, point1)| (point1.x as u8 - self.x)
@@ -51,10 +50,9 @@ impl SpaceInvaders {
         */
 
         let enemies: Vec<Pointf32> = self.enemies.iter()
-            .filter(|enemy| bullets.iter()
+            .filter(|enemy| self.bullets.iter()
                 .all(|bullet| !SpaceInvaders::collides(bullet, enemy)))
             .map(|point| point.clone()).collect();
-
 
         let max_x_o = enemies.iter().map(|point| point.x as u8).max();
         let min_x_o = enemies.iter().map(|point| point.x as u8).min();
@@ -68,13 +66,11 @@ impl SpaceInvaders {
         let min_x = min_x_o.unwrap() as u8;
         let max_y = max_y_o.unwrap() as u8;
 
-
-        let bullets = bullets.iter()
+        let bullets: Vec<Pointf32> = self.bullets.iter()
             .filter(|bullet|
                 self.enemies.iter()
                     .all(|enemy| !SpaceInvaders::collides(bullet, enemy)))
             .map(|point| point.clone()).collect();
-
 
         let mut enemy_direction = self.enemy_velocity;
 
@@ -100,6 +96,8 @@ impl SpaceInvaders {
                 .collect()
         };
 
+        let bullets: Vec<Pointf32> = bullets.iter().map(|point| point.up())
+            .filter(|bullet| bullet.y >= 0.0).collect();
 
         Some(SpaceInvaders { x: self.x, enemies, bullets, enemy_bullets, enemy_velocity: enemy_direction * 1.005, score: self.score })
     }
