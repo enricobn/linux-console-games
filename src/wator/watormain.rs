@@ -30,11 +30,10 @@ impl <W: Write> Main<W> for WatorMain<W> {
 
     fn run(&self, mut stdout: &mut W, stdin: &mut Keys<AsyncReader>) -> io::Result<Option<u32>> {
         write!(stdout,
-               "{}{}{}{}",
+               "{}{}{}",
                termion::clear::All,
                termion::cursor::Goto(1, 1),
-               termion::cursor::Goto(1, 2),
-               termion::cursor::Hide)?;
+               termion::cursor::Goto(1, 2))?;
 
         stdout.flush()?;
 

@@ -30,11 +30,10 @@ impl <W: Write> Main<W> for TetrisMain<W> {
 
     fn run(&self, mut stdout: &mut W, stdin: &mut Keys<AsyncReader>) -> io::Result<Option<u32>> {
         write!(stdout,
-               "{}{}q to exit, left and right arrow to move{}down to rotate clockwise, up to rotate counterclockwise.\r\n{}",
+               "{}{}q to exit, left and right arrow to move{}down to rotate clockwise, up to rotate counterclockwise.\r\n",
                termion::clear::All,
                termion::cursor::Goto(1, 1),
-               termion::cursor::Goto(1, 2),
-               termion::cursor::Hide)?;
+               termion::cursor::Goto(1, 2))?;
 
         stdout.flush()?;
 

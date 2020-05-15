@@ -43,11 +43,6 @@ impl<W: Write> Main<W> for SnakeMain<W> {
                                  rng.gen_range(0, HEIGHT) as i8));
         }
 
-        write!(stdout,
-               "{}",
-               termion::cursor::Hide)?;
-        stdout.flush()?;
-
         let mut result : io::Result<Option<u32>> = Result::Ok(None);
 
         'outer: loop {

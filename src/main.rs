@@ -17,12 +17,14 @@ use crate::arkanoid::arkanoidmain::ArkanoidMain;
 use crate::common::ioutils::wait_for_key_async;
 use crate::common::persistence::HighScores;
 use crate::snake::snakemain::SnakeMain;
+use crate::spaceinvaders::spaceinvadersmain::SpaceInvadersMain;
 use crate::tetris::tetrismain::TetrisMain;
 use crate::wator::watormain::WatorMain;
 
 mod arkanoid;
 mod common;
 mod snake;
+mod spaceinvaders;
 mod tetris;
 mod wator;
 
@@ -64,7 +66,8 @@ fn main() {
             vec!(Box::new(TetrisMain::new()),
                  Box::new(SnakeMain::new()),
                  Box::new(WatorMain::new()),
-                 Box::new(ArkanoidMain::new())
+                 Box::new(ArkanoidMain::new()),
+                 Box::new(SpaceInvadersMain::new())
             );
 
         let menu = mains.iter().map(|main| main.name()).collect();
