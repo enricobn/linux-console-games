@@ -3,13 +3,11 @@ use std::io::{Error, Write};
 use std::marker::PhantomData;
 use std::time::Duration;
 
-use rand::Rng;
 use termion::AsyncReader;
 use termion::event::Key;
 use termion::input::Keys;
 
 use crate::common::persistence::HighScores;
-use crate::common::point::{Direction, Point};
 use crate::Main;
 use crate::spaceinvaders::spaceinvaders::SpaceInvaders;
 

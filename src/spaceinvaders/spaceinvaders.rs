@@ -1,12 +1,10 @@
 use std::io;
 use std::io::Write;
-use std::ops::Range;
 
-use chrono::format::Pad::Space;
 use rand::Rng;
 use termion::color;
 
-use crate::common::point::{Point, Pointf32};
+use crate::common::point::Pointf32;
 
 const WIDTH: u8 = 40;
 const HEIGHT: u8 = 20;
@@ -41,8 +39,6 @@ impl SpaceInvaders {
     }
 
     pub fn next(&self) -> Option<SpaceInvaders> {
-
-
         /*
                 let nearest = bullets.iter().enumerate()
                     .min_by(|(i, point),(i1, point1)| (point1.x as u8 - self.x)
@@ -70,21 +66,15 @@ impl SpaceInvaders {
             .filter(|bullet|
                 self.enemies.iter()
                     .all(|enemy| !SpaceInvaders::collides(bullet, enemy)))
-            .map(|point| point.clone()).collect();
+            .map(|point| point.up())
+            .filter(|bullet| bullet.y >= 0.0).collect();
 
         let mut enemy_direction = self.enemy_velocity;
 
         let mut enemy_bullets: Vec<Pointf32> = self.enemy_bullets.iter().map(|point| point.down())
             .filter(|point| (point.y as u8) <= HEIGHT).collect();
 
-        let enemies = if max_x >= WIDTH - MARGIN {
-            enemy_direction = -enemy_direction;
-
-            enemy_bullets.push(SpaceInvaders::enemy_fire(&enemies, max_y));
-
-            enemies.iter().map(|point| Pointf32::new(point.x + enemy_direction, point.y + 1.0))
-                .collect()
-        } else if min_x <= MARGIN {
+        let enemies = if max_x >= WIDTH - MARGIN || min_x <= MARGIN {
             enemy_direction = -enemy_direction;
 
             enemy_bullets.push(SpaceInvaders::enemy_fire(&enemies, max_y));
@@ -95,9 +85,6 @@ impl SpaceInvaders {
             enemies.iter().map(|point| Pointf32::new(point.x + enemy_direction, point.y))
                 .collect()
         };
-
-        let bullets: Vec<Pointf32> = bullets.iter().map(|point| point.up())
-            .filter(|bullet| bullet.y >= 0.0).collect();
 
         Some(SpaceInvaders { x: self.x, enemies, bullets, enemy_bullets, enemy_velocity: enemy_direction * 1.005, score: self.score })
     }
