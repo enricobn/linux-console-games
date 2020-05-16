@@ -1,7 +1,8 @@
 use std::{fs, io};
+use std::cmp::Ordering::Equal;
 use std::fs::create_dir_all;
 use std::fs::File;
-use std::io::{Read, ErrorKind, Error};
+use std::io::{Error, ErrorKind, Read};
 use std::path::PathBuf;
 
 use chrono::{DateTime, Local};
@@ -9,7 +10,7 @@ use dirs::home_dir;
 
 const HIGH_SCORES_MAX_SIZE: usize = 10;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct HighScores {
     path: String,
     entries: Vec<HighScore>
@@ -65,15 +66,23 @@ impl HighScores {
         }
     }
 
-    pub fn add(&mut self, score: u32) {
+    pub fn add(&mut self, score: u32) -> Option<HighScore>{
         let entry = HighScore { score, time: Local::now() };
+
+        let e = entry.clone();
+
         self.entries.push(entry);
+
         let len = self.entries.len();
+
         self.entries.sort_by(|a, b| b.score().cmp(&a.score()));
 
         if len > HIGH_SCORES_MAX_SIZE {
             self.entries.remove(len - 1);
         }
+
+        self.entries.iter().find(|s| s.time().cmp(&e.time()) == Equal)
+            .map(|s| s.clone())
     }
 
     pub fn entries(&self) -> Vec<HighScore> {

@@ -6,8 +6,9 @@ extern crate serde_json;
 extern crate termion;
 
 use std::io;
-use std::io::{stdout, Stdout, Read, Write};
+use std::io::{Read, stdout, Stdout, Write};
 
+use chrono::{DateTime, Local};
 use termion::{async_stdin, AsyncReader, color};
 use termion::event::Key;
 use termion::raw::{IntoRawMode, RawTerminal};
@@ -96,22 +97,10 @@ fn main() {
            termion::cursor::Show).unwrap();
 }
 
-fn run<W,R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W,R>>) -> io::Result<()> where W: Write, R: Read {
+fn run<W, R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W, R>>) -> io::Result<()> where W: Write, R: Read {
     let scores = main.high_scores()?;
 
-    write!(stdout,
-           "{}{}High scores",
-           termion::clear::All,
-           termion::cursor::Goto(10, 1))?;
-
-    let mut y = 3;
-    for score in scores.entries().iter() {
-        write!(stdout,
-               "{}{}",
-               termion::cursor::Goto(10, y),
-               score.score())?;
-        y += 1;
-    }
+    print_scores(stdout, scores, None)?;
 
     write!(stdout,
            "{}Press s to start.",
@@ -125,14 +114,16 @@ fn run<W,R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W,R>>) -> io::Resu
 
     if let Some(score) = result {
         let mut scores = main.high_scores()?;
-        // game is ended
-        scores.add(score);
+
+        let added = scores.add(score);
+
         scores.save()?;
 
+        print_scores(stdout, scores, added.map(|score| score.time()))?;
+
         write!(stdout,
-               "{}{}Game over! Score: {}  \n\r\n\rPress c to continue.",
-               termion::clear::All,
-               termion::cursor::Goto(1, 10),
+               "{}Game over! Score: {}  \n\r\n\rPress c to continue.",
+               termion::cursor::Goto(1, 15),
                score)?;
 
         stdout.flush()?;
@@ -143,4 +134,28 @@ fn run<W,R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W,R>>) -> io::Resu
     } else {
         Result::Ok(())
     }
+}
+
+fn print_scores<W: Write>(stdout: &mut W, scores: HighScores, highlight: Option<DateTime<Local>>) -> io::Result<()> {
+    write!(stdout,
+           "{}{}High scores",
+           termion::clear::All,
+           termion::cursor::Goto(10, 1))?;
+
+    let mut y = 3;
+    for score in scores.entries().iter() {
+        if Some(score.time()) == highlight {
+            write!(stdout, "{}",
+                   color::Fg(color::Green))?;
+        } else {
+            write!(stdout, "{}",
+                   termion::style::Reset)?;
+        }
+        write!(stdout,
+               "{}{}",
+               termion::cursor::Goto(10, y),
+               score.score())?;
+        y += 1;
+    }
+    Ok(())
 }
