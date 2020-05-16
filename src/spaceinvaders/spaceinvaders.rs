@@ -96,24 +96,10 @@ impl SpaceInvaders {
             return None
         }
 
-        Some(SpaceInvaders { x: self.x, enemies, bullets, enemy_bullets, enemy_velocity: enemy_direction * 1.005, score: self.score })
-    }
+        let score = self.score + (1000 * (self.enemies.len() - enemies.len())) as u32;
 
-    fn collides(bullet: &Pointf32, enemy: &Pointf32) -> bool {
-        bullet.x as u16 == enemy.x as u16 && bullet.y as u16 == enemy.y as u16
-    }
-
-    fn enemy_fire(enemies: &Vec<Pointf32>, max_y: u8) -> Pointf32 {
-        let enemies_to_fire: Vec<Pointf32> = enemies.iter().filter(|point| point.y as u8 == max_y)
-            .map(|point| point.clone()).collect();
-
-        let mut rng = rand::thread_rng();
-        let index = rng.gen_range(0, enemies_to_fire.len());
-
-        let bullet_x = enemies_to_fire[index].x;
-        let bullet_y = enemies_to_fire[index].y + 2.0;
-
-        Pointf32::new(bullet_x, bullet_y)
+        Some(SpaceInvaders { x: self.x, enemies, bullets, enemy_bullets, enemy_velocity: enemy_direction * 1.005,
+            score })
     }
 
     pub fn right(&self) -> SpaceInvaders {
@@ -189,6 +175,27 @@ impl SpaceInvaders {
 
         write!(term, "{}A",
                termion::cursor::Goto(self.x as u16 + x + 1, HEIGHT as u16 + y + 1))
+    }
+
+    pub fn score(&self) -> u32 {
+        self.score
+    }
+
+    fn collides(bullet: &Pointf32, enemy: &Pointf32) -> bool {
+        bullet.x as u16 == enemy.x as u16 && bullet.y as u16 == enemy.y as u16
+    }
+
+    fn enemy_fire(enemies: &Vec<Pointf32>, max_y: u8) -> Pointf32 {
+        let enemies_to_fire: Vec<Pointf32> = enemies.iter().filter(|point| point.y as u8 == max_y)
+            .map(|point| point.clone()).collect();
+
+        let mut rng = rand::thread_rng();
+        let index = rng.gen_range(0, enemies_to_fire.len());
+
+        let bullet_x = enemies_to_fire[index].x;
+        let bullet_y = enemies_to_fire[index].y + 2.0;
+
+        Pointf32::new(bullet_x, bullet_y)
     }
 }
 

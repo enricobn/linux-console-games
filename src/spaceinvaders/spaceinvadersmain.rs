@@ -32,7 +32,6 @@ impl<W: Write, R: Read> Main<W, R> for SpaceInvadersMain<W> {
         stdout.flush()?;
 
         let mut spaceinvaders = SpaceInvaders::new();
-        let mut score: u32 = 0;
 
         let mut result : io::Result<Option<u32>> = Result::Ok(None);
 
@@ -58,7 +57,7 @@ impl<W: Write, R: Read> Main<W, R> for SpaceInvadersMain<W> {
                 }
 
                 if key_pressed {
-                    print(&mut stdout, &spaceinvaders, score)?;
+                    print(&mut stdout, &spaceinvaders)?;
                 }
 
                 thread::sleep(Duration::from_millis(5));
@@ -67,9 +66,9 @@ impl<W: Write, R: Read> Main<W, R> for SpaceInvadersMain<W> {
             if let Some(next_spaceinvaders) = spaceinvaders.next() {
                 spaceinvaders = next_spaceinvaders;
 
-                print(&mut stdout, &spaceinvaders, score)?;
+                print(&mut stdout, &spaceinvaders)?;
             } else {
-                result = Result::Ok(Some(score));
+                result = Result::Ok(Some(spaceinvaders.score()));
                 break 'outer;
             }
         }
@@ -84,12 +83,12 @@ impl<W: Write, R: Read> Main<W, R> for SpaceInvadersMain<W> {
     }
 }
 
-fn print<W: Write>(mut stdout: &mut W, spaceinvaders: &SpaceInvaders, score: u32) -> io::Result<()> {
+fn print<W: Write>(mut stdout: &mut W, spaceinvaders: &SpaceInvaders) -> io::Result<()> {
     write!(stdout,
            "{}{}Score: {}",
            termion::clear::All,
            termion::cursor::Goto(1, 1),
-           score)?;
+           spaceinvaders.score())?;
 
     spaceinvaders.print(&mut stdout, 1, 2)?;
 
