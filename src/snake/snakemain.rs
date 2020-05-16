@@ -1,12 +1,11 @@
 use std::{io, thread};
-use std::io::{Error, Write};
+use std::io::{Error, Write, Read};
 use std::marker::PhantomData;
 use std::time::Duration;
 
 use rand::Rng;
-use termion::AsyncReader;
 use termion::event::Key;
-use termion::input::Keys;
+use termion::input::TermRead;
 
 use crate::common::persistence::HighScores;
 use crate::common::point::{Direction, Point};
@@ -27,12 +26,12 @@ impl<W: Write> SnakeMain<W> {
     }
 }
 
-impl<W: Write> Main<W> for SnakeMain<W> {
+impl<W: Write, R: Read> Main<W, R> for SnakeMain<W> {
     fn name(&self) -> &'static str {
         "Snake"
     }
 
-    fn run(&self, mut stdout: &mut W, stdin: &mut Keys<AsyncReader>) -> io::Result<Option<u32>> {
+    fn run(&self, mut stdout: &mut W, stdin: &mut R) -> io::Result<Option<u32>> {
         let mut snake = Snake::new(WIDTH, HEIGHT, Direction::East);
         let mut score: u32 = 0;
         let mut food: Vec<Point> = vec!();
@@ -43,13 +42,13 @@ impl<W: Write> Main<W> for SnakeMain<W> {
                                  rng.gen_range(0, HEIGHT) as i8));
         }
 
-        let mut result : io::Result<Option<u32>> = Result::Ok(None);
+        let mut result: io::Result<Option<u32>> = Result::Ok(None);
 
         'outer: loop {
             for _i in 0..20 {
                 let mut key_pressed = false;
 
-                if let Some(key_or_error) = stdin.next() {
+                if let Some(key_or_error) = stdin.keys().next() {
                     let key = key_or_error?;
 
                     if let Key::Esc = key {
@@ -98,7 +97,7 @@ impl<W: Write> Main<W> for SnakeMain<W> {
             }
         }
 
-        while stdin.next().is_some() { }
+        while stdin.keys().next().is_some() {}
 
         result
     }

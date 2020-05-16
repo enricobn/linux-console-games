@@ -1,34 +1,33 @@
 use std::{io, thread};
-use std::io::Error;
+use std::io::{Error, Read};
 use std::io::Write;
 use std::time::Duration;
-
-use termion::AsyncReader;
 
 use crate::wator::wator::Wator;
 use std::marker::PhantomData;
 use crate::Main;
 use crate::common::persistence::HighScores;
-use termion::input::Keys;
+use termion::input::TermRead;
 use termion::event::Key;
 
-pub struct WatorMain<W: Write> {
-    _marker: PhantomData<W>,
+pub struct WatorMain<W: Write, R: Read> {
+    _w_marker: PhantomData<W>,
+    _r_marker: PhantomData<R>,
 }
 
-impl <W: Write> WatorMain<W> {
-    pub fn new() -> WatorMain<W> {
-        WatorMain { _marker: PhantomData }
+impl <W: Write, R: Read> WatorMain<W, R> {
+    pub fn new() -> WatorMain<W, R> {
+        WatorMain { _w_marker: PhantomData, _r_marker: PhantomData }
     }
 }
 
-impl <W: Write> Main<W> for WatorMain<W> {
+impl <W: Write, R: Read> Main<W, R> for WatorMain<W, R> {
 
     fn name(&self) -> &'static str {
         "Wator"
     }
 
-    fn run(&self, mut stdout: &mut W, stdin: &mut Keys<AsyncReader>) -> io::Result<Option<u32>> {
+    fn run(&self, mut stdout: &mut W, stdin: &mut R) -> io::Result<Option<u32>> {
         write!(stdout,
                "{}{}{}",
                termion::clear::All,
@@ -48,7 +47,7 @@ impl <W: Write> Main<W> for WatorMain<W> {
 
             print(&mut stdout, &mut wator)?;
 
-            let b = stdin.next();
+            let b = stdin.keys().next();
             if let Some(Ok(Key::Esc)) = b {
                 break
             }
@@ -63,7 +62,7 @@ impl <W: Write> Main<W> for WatorMain<W> {
             }
         }
 
-        while stdin.next().is_some() { }
+        while stdin.keys().next().is_some() { }
 
         result
     }

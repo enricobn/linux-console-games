@@ -6,11 +6,10 @@ extern crate serde_json;
 extern crate termion;
 
 use std::io;
-use std::io::{stdout, Stdout, Write};
+use std::io::{stdout, Stdout, Read, Write};
 
 use termion::{async_stdin, AsyncReader, color};
 use termion::event::Key;
-use termion::input::{Keys, TermRead};
 use termion::raw::{IntoRawMode, RawTerminal};
 
 use crate::arkanoid::arkanoidmain::ArkanoidMain;
@@ -41,17 +40,17 @@ macro_rules! attempt { // `try` is a reserved keyword
    };
 }
 
-pub trait Main<W: Write> {
+pub trait Main<W: Write, R: Read> {
     fn name(&self) -> &'static str;
 
-    fn run(&self, stdout: &mut W, stdin: &mut Keys<AsyncReader>) -> io::Result<Option<u32>>;
+    fn run(&self, stdout: &mut W, stdin: &mut R) -> io::Result<Option<u32>>;
 
     fn high_scores(&self) -> io::Result<HighScores>;
 }
 
 fn main() {
     let mut stdout = stdout().into_raw_mode().unwrap();
-    let mut stdin: Keys<AsyncReader> = async_stdin().keys();
+    let mut stdin = async_stdin();
 
     loop {
         write!(stdout,
@@ -62,7 +61,7 @@ fn main() {
                color::Bg(color::Red),
                termion::style::Reset).unwrap();
 
-        let mains: Vec<Box<dyn Main<RawTerminal<Stdout>>>> =
+        let mains: Vec<Box<dyn Main<RawTerminal<Stdout>, AsyncReader>>> =
             vec!(Box::new(TetrisMain::new()),
                  Box::new(SnakeMain::new()),
                  Box::new(WatorMain::new()),
@@ -97,7 +96,7 @@ fn main() {
            termion::cursor::Show).unwrap();
 }
 
-fn run<W>(stdout: &mut W, stdin: &mut Keys<AsyncReader>, main: Box<dyn Main<W>>) -> io::Result<()> where W: Write {
+fn run<W,R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W,R>>) -> io::Result<()> where W: Write, R: Read {
     let scores = main.high_scores()?;
 
     write!(stdout,

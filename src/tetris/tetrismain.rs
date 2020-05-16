@@ -1,34 +1,34 @@
 use std::{io, thread};
-use std::io::{Write, Error};
+use std::io::{Write, Error, Read};
 use std::time::Duration;
 
-use termion::AsyncReader;
 use termion::event::Key;
 use termion::event::Key::Char;
-use termion::input::Keys;
+use termion::input::TermRead;
 
 use crate::common::persistence::HighScores;
 use crate::tetris::tetris::Tetris;
 use crate::Main;
 use std::marker::PhantomData;
 
-pub struct TetrisMain<W: Write> {
+pub struct TetrisMain<W: Write, R: Read> {
     _w_marker: PhantomData<W>,
+    _r_marker: PhantomData<R>,
 }
 
-impl <W: Write> TetrisMain<W> {
-    pub fn new() -> TetrisMain<W> {
-        TetrisMain { _w_marker: PhantomData }
+impl <W: Write, R: Read> TetrisMain<W, R> {
+    pub fn new() -> TetrisMain<W, R> {
+        TetrisMain { _w_marker: PhantomData, _r_marker: PhantomData }
     }
 }
 
-impl <W: Write> Main<W> for TetrisMain<W> {
+impl <W: Write, R: Read> Main<W,R> for TetrisMain<W,R> {
 
     fn name(&self) -> &'static str {
         "Tetris"
     }
 
-    fn run(&self, mut stdout: &mut W, stdin: &mut Keys<AsyncReader>) -> io::Result<Option<u32>> {
+    fn run(&self, mut stdout: &mut W, stdin: &mut R) -> io::Result<Option<u32>> {
         write!(stdout,
                "{}{}q to exit, left and right arrow to move{}down to rotate clockwise, up to rotate counterclockwise.\r\n",
                termion::clear::All,
@@ -49,7 +49,7 @@ impl <W: Write> Main<W> for TetrisMain<W> {
             for _i in 0..40 {
                 let mut key_pressed = false;
 
-                if let Some(key_or_error) = stdin.next() {
+                if let Some(key_or_error) = stdin.keys().next() {
                     let key = key_or_error?;
 
                     if let Key::Esc = key {
@@ -92,7 +92,7 @@ impl <W: Write> Main<W> for TetrisMain<W> {
             }
         }
 
-        while stdin.next().is_some() { }
+        while stdin.keys().next().is_some() { }
 
         result
     }

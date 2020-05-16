@@ -1,10 +1,10 @@
 use std::{io, thread};
-use std::io::Write;
+use std::io::{Write, Read};
 use std::time::Duration;
 
-use termion::{color, AsyncReader};
+use termion::color;
 use termion::event::Key;
-use termion::input::Keys;
+use termion::input::TermRead;
 
 pub fn print_border<W: Write>(stdout: &mut W, x: u16, y: u16, width: u16, height: u16) -> io::Result<()> {
     write!(stdout, "{}", color::Bg(color::White))?;
@@ -28,9 +28,9 @@ fn print_border_row<W: Write>(term: &mut W, x: u16, y: u16, width: u16) -> io::R
            " ".repeat(width as usize))
 }
 
-pub fn wait_for_key_async(stdin: &mut Keys<AsyncReader>, key: Key) -> io::Result<()> {
+pub fn wait_for_key_async<R: Read>(stdin: &mut R, key: Key) -> io::Result<()> {
     loop {
-        if let Some(key_or_error) = stdin.next() {
+        if let Some(key_or_error) = stdin.keys().next() {
             let pressed_key = key_or_error?;
 
             if pressed_key == key {

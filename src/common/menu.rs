@@ -1,11 +1,11 @@
 use std::{io, thread};
-use termion::{color, AsyncReader};
-use std::io::Write;
+use termion::color;
+use std::io::{Write, Read};
 use termion::event::Key;
-use termion::input::Keys;
+use termion::input::TermRead;
 use std::time::Duration;
 
-pub fn choose<W: Write>(stdout: &mut W, stdin: &mut Keys<AsyncReader>, menu: &Vec<&str>, x: u16, y: u16) -> io::Result<Option<u8>> {
+pub fn choose<W: Write, R: Read>(stdout: &mut W, stdin: &mut R, menu: &Vec<&str>, x: u16, y: u16) -> io::Result<Option<u8>> {
     let mut index : i8 = 0;
 
     'outer: loop {
@@ -31,7 +31,7 @@ pub fn choose<W: Write>(stdout: &mut W, stdin: &mut Keys<AsyncReader>, menu: &Ve
         stdout.flush()?;
 
         loop {
-            if let Some(Ok(c)) = stdin.next() {
+            if let Some(Ok(c)) = stdin.keys().next() {
                 match c {
                     Key::Up => {
                         index -= 1;

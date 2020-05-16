@@ -1,11 +1,10 @@
 use std::{io, thread};
-use std::io::{Error, Write};
+use std::io::{Error, Write, Read};
 use std::marker::PhantomData;
 use std::time::Duration;
 
-use termion::AsyncReader;
 use termion::event::Key;
-use termion::input::Keys;
+use termion::input::TermRead;
 
 use crate::common::persistence::HighScores;
 use crate::Main;
@@ -21,12 +20,12 @@ impl<W: Write> SpaceInvadersMain<W> {
     }
 }
 
-impl<W: Write> Main<W> for SpaceInvadersMain<W> {
+impl<W: Write, R: Read> Main<W, R> for SpaceInvadersMain<W> {
     fn name(&self) -> &'static str {
         "Space Invaders"
     }
 
-    fn run(&self, mut stdout: &mut W, stdin: &mut Keys<AsyncReader>) -> io::Result<Option<u32>> {
+    fn run(&self, mut stdout: &mut W, stdin: &mut R) -> io::Result<Option<u32>> {
         write!(stdout,
                "{}",
                termion::clear::All)?;
@@ -41,7 +40,7 @@ impl<W: Write> Main<W> for SpaceInvadersMain<W> {
             for _i in 0..20 {
                 let mut key_pressed = false;
 
-                if let Some(key_or_error) = stdin.next() {
+                if let Some(key_or_error) = stdin.keys().next() {
                     let key = key_or_error?;
 
                     if let Key::Esc = key {
@@ -75,7 +74,7 @@ impl<W: Write> Main<W> for SpaceInvadersMain<W> {
             }
         }
 
-        while stdin.next().is_some() { }
+        while stdin.keys().next().is_some() { }
 
         result
     }
