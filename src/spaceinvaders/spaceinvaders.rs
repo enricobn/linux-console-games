@@ -74,7 +74,7 @@ impl SpaceInvaders {
         let mut enemy_bullets: Vec<Pointf32> = self.enemy_bullets.iter().map(|point| point.down())
             .filter(|point| (point.y as u8) <= HEIGHT).collect();
 
-        let enemies = if max_x >= WIDTH - MARGIN || min_x <= MARGIN {
+        let enemies: Vec<Pointf32> = if max_x >= WIDTH - MARGIN || min_x <= MARGIN {
             enemy_direction = -enemy_direction;
 
             enemy_bullets.push(SpaceInvaders::enemy_fire(&enemies, max_y));
@@ -86,11 +86,20 @@ impl SpaceInvaders {
                 .collect()
         };
 
+        if enemies.iter().any(|enemy| enemy.y >= HEIGHT as f32) {
+            return None
+        }
+
+        let position = Pointf32::new(self.x as f32, HEIGHT as f32);
+
+        if enemy_bullets.iter().any(|bullet| SpaceInvaders::collides(bullet, &position)) {
+            return None
+        }
+
         Some(SpaceInvaders { x: self.x, enemies, bullets, enemy_bullets, enemy_velocity: enemy_direction * 1.005, score: self.score })
     }
 
     fn collides(bullet: &Pointf32, enemy: &Pointf32) -> bool {
-        //(bullet.x - enemy.x).abs() < 1.0  && (bullet.y - enemy.y).abs() < 1.0
         bullet.x as u16 == enemy.x as u16 && bullet.y as u16 == enemy.y as u16
     }
 
