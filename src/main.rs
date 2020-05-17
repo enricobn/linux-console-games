@@ -5,13 +5,16 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate termion;
 
-use std::io;
-use std::io::{Read, stdout, Stdout, Write};
+use std::{io, thread};
+use std::io::{Read, stdout, Write};
+use std::time::Duration;
 
 use chrono::{DateTime, Local};
-use termion::{async_stdin, AsyncReader, color};
+use termion::{async_stdin, color};
 use termion::event::Key;
-use termion::raw::{IntoRawMode, RawTerminal};
+use termion::event::Key::Char;
+use termion::input::TermRead;
+use termion::raw::IntoRawMode;
 
 use crate::arkanoid::arkanoidmain::ArkanoidMain;
 use crate::common::ioutils::wait_for_key_async;
@@ -53,6 +56,26 @@ fn main() {
     let mut stdout = stdout().into_raw_mode().unwrap();
     let mut stdin = async_stdin();
 
+    attempt! {{
+        run(&mut stdout, &mut stdin);
+    } catch(e) {
+        reset_status(&mut stdout);
+
+        println!("Failed to run: {}", e);
+    }};
+
+    reset_status(&mut stdout);
+}
+
+fn reset_status<W: 'static>(stdout: &mut W) -> io::Result<()> where W: Write {
+    write!(stdout,
+           "{}{}\r\n",
+           termion::cursor::Show,
+           termion::style::Reset)?;
+    stdout.flush()
+}
+
+fn run<W: 'static, R: 'static>(stdout: &mut W, stdin: &mut R) -> io::Result<()> where W: Write, R: Read {
     loop {
         write!(stdout,
                "{}{}{}{}Console games{}\r\n\n",
@@ -62,7 +85,7 @@ fn main() {
                color::Bg(color::Red),
                termion::style::Reset).unwrap();
 
-        let mains: Vec<Box<dyn Main<RawTerminal<Stdout>, AsyncReader>>> =
+        let mains: Vec<Box<dyn Main<W, R>>> =
             vec!(Box::new(TetrisMain::new()),
                  Box::new(SnakeMain::new()),
                  Box::new(WatorMain::new()),
@@ -72,68 +95,74 @@ fn main() {
 
         let menu = mains.iter().map(|main| main.name()).collect();
 
-        let choice = common::menu::choose(&mut stdout, &mut stdin, &menu, 1, 3).unwrap();
+        let choice = common::menu::choose(stdout, stdin, &menu, 1, 3).unwrap();
 
         if let Some(index) = choice {
-            attempt! {{
-            run(&mut stdout, &mut stdin, mains.into_iter().enumerate().find(|(i, _main)| *i == index as usize).unwrap().1);
-        } catch(e) {
-            write!(stdout,
-                   "{}\n\r",
-                   termion::cursor::Show)
-                .unwrap();
-
-            stdout.flush().unwrap();
-
-            println!("Failed to run: {}", e);
-        }}
+            if run_main(stdout, stdin, mains.into_iter().enumerate().find(|(i, _main)| *i == index as usize).unwrap().1)?.is_none() {
+                break;
+            }
         } else {
             break;
         }
     }
 
-    write!(stdout,
-           "{}\r\n",
-           termion::cursor::Show).unwrap();
+    Ok(())
 }
 
-fn run<W, R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W, R>>) -> io::Result<()> where W: Write, R: Read {
+fn run_main<W, R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W, R>>) -> io::Result<Option<()>> where W: Write, R: Read {
     let scores = main.high_scores()?;
 
     print_scores(stdout, scores, None)?;
 
     write!(stdout,
-           "{}Press s to start.",
+           "{}Press 's' to start.",
            termion::cursor::Goto(1, 20))?;
 
     stdout.flush()?;
 
     wait_for_key_async(stdin, Key::Char('s'))?;
 
-    let result = main.run(stdout, stdin)?;
+    'outer: loop {
+        let result = main.run(stdout, stdin)?;
 
-    if let Some(score) = result {
-        let mut scores = main.high_scores()?;
+        if let Some(score) = result {
+            let mut scores = main.high_scores()?;
 
-        let added = scores.add(score);
+            let added = scores.add(score);
 
-        scores.save()?;
+            scores.save()?;
 
-        print_scores(stdout, scores, added.map(|score| score.time()))?;
+            print_scores(stdout, scores, added.map(|score| score.time()))?;
 
-        write!(stdout,
-               "{}Game over! Score: {}  \n\r\n\rPress c to continue.",
-               termion::cursor::Goto(1, 15),
-               score)?;
+            write!(stdout,
+                   "{}Game over! \n\rScore: {}\n\r\n\rPress 'm' to go to menu, 'p' to play again, Esc to exit.",
+                   termion::cursor::Goto(1, 15),
+                   score)?;
 
-        stdout.flush()?;
+            stdout.flush()?;
 
-        wait_for_key_async(stdin, Key::Char('c'))?;
+            'wait_for_key: loop {
+                if let Some(key_or_error) = stdin.keys().next() {
+                    let key = key_or_error?;
 
-        Ok(())
-    } else {
-        Result::Ok(())
+                    if let Key::Esc = key {
+                        return Ok(None);
+                    } else if let Char('m') = key {
+                        break 'outer;
+                    } else if let Char('p') = key {
+                        break 'wait_for_key;
+                    }
+                }
+
+                thread::sleep(Duration::from_millis(10));
+            }
+        } else {
+            break 'outer;
+        }
     }
+
+    Ok(Some(()))
+
 }
 
 fn print_scores<W: Write>(stdout: &mut W, scores: HighScores, highlight: Option<DateTime<Local>>) -> io::Result<()> {
