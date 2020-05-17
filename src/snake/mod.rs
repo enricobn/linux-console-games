@@ -1,2 +1,2 @@
-pub mod snake;
+mod snake;
 pub mod snakemain;

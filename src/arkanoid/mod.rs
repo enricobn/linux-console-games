@@ -1,2 +1,2 @@
-pub mod arkanoid;
+mod arkanoid;
 pub mod arkanoidmain;

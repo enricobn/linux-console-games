@@ -1,3 +1,3 @@
-pub mod shape;
-pub mod tetris;
+mod shape;
+mod tetris;
 pub mod tetrismain;

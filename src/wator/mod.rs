@@ -1,2 +1,2 @@
-pub mod wator;
+mod wator;
 pub mod watormain;
