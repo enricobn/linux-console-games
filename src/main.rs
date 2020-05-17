@@ -78,7 +78,7 @@ fn reset_status<W: 'static>(stdout: &mut W) -> io::Result<()> where W: Write {
 fn run<W: 'static, R: 'static>(stdout: &mut W, stdin: &mut R) -> io::Result<()> where W: Write, R: Read {
     loop {
         write!(stdout,
-               "{}{}{}{}Console games{}\r\n\n",
+               "{}{}{}{}Console games{}\r\n\r\nPress Esc to exit",
                termion::cursor::Hide,
                termion::clear::All,
                termion::cursor::Goto(1, 1),
@@ -95,12 +95,10 @@ fn run<W: 'static, R: 'static>(stdout: &mut W, stdin: &mut R) -> io::Result<()> 
 
         let menu = mains.iter().map(|main| main.name()).collect();
 
-        let choice = common::menu::choose(stdout, stdin, &menu, 1, 3).unwrap();
+        let choice = common::menu::choose(stdout, stdin, &menu, 1, 5).unwrap();
 
         if let Some(index) = choice {
-            if run_main(stdout, stdin, mains.into_iter().enumerate().find(|(i, _main)| *i == index as usize).unwrap().1)?.is_none() {
-                break;
-            }
+            run_main(stdout, stdin, mains.into_iter().enumerate().find(|(i, _main)| *i == index as usize).unwrap().1)?;
         } else {
             break;
         }
@@ -109,18 +107,18 @@ fn run<W: 'static, R: 'static>(stdout: &mut W, stdin: &mut R) -> io::Result<()> 
     Ok(())
 }
 
-fn run_main<W, R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W, R>>) -> io::Result<Option<()>> where W: Write, R: Read {
+fn run_main<W, R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W, R>>) -> io::Result<()> where W: Write, R: Read {
     let scores = main.high_scores()?;
 
     print_scores(stdout, scores, None)?;
 
     write!(stdout,
-           "{}Press 's' to start.",
+           "{}Press 'p' to play.",
            termion::cursor::Goto(1, 20))?;
 
     stdout.flush()?;
 
-    wait_for_key_async(stdin, Key::Char('s'))?;
+    wait_for_key_async(stdin, Key::Char('p'))?;
 
     'outer: loop {
         let result = main.run(stdout, stdin)?;
@@ -135,7 +133,7 @@ fn run_main<W, R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W, R>>) -> i
             print_scores(stdout, scores, added.map(|score| score.time()))?;
 
             write!(stdout,
-                   "{}Game over! \n\rScore: {}\n\r\n\rPress 'm' to go to menu, 'p' to play again, Esc to exit.",
+                   "{}Game over! \n\rScore: {}\n\r\n\rPress 'p' to play again, Esc exit to return to menu.",
                    termion::cursor::Goto(1, 15),
                    score)?;
 
@@ -146,8 +144,6 @@ fn run_main<W, R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W, R>>) -> i
                     let key = key_or_error?;
 
                     if let Key::Esc = key {
-                        return Ok(None);
-                    } else if let Char('m') = key {
                         break 'outer;
                     } else if let Char('p') = key {
                         break 'wait_for_key;
@@ -161,7 +157,7 @@ fn run_main<W, R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W, R>>) -> i
         }
     }
 
-    Ok(Some(()))
+    Ok(())
 
 }
 
@@ -176,14 +172,12 @@ fn print_scores<W: Write>(stdout: &mut W, scores: HighScores, highlight: Option<
         if Some(score.time()) == highlight {
             write!(stdout, "{}",
                    color::Fg(color::Green))?;
-        } else {
-            write!(stdout, "{}",
-                   termion::style::Reset)?;
         }
         write!(stdout,
-               "{}{}",
+               "{}{}{}",
                termion::cursor::Goto(10, y),
-               score.score())?;
+               score.score(),
+               termion::style::Reset)?;
         y += 1;
     }
     Ok(())
