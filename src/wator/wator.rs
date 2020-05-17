@@ -320,6 +320,30 @@ impl Wator {
         (fishes, sharks)
     }
 
+    pub fn print<W: Write>(&self, term: &mut W, border: bool) -> io::Result<()> {
+        let (fishes, sharks) = self.count();
+        write!(term, "Fishes: {}  Sharks: {}\n\r", fishes, sharks)?;
+
+        if border { self.print_border_row(term)?; }
+
+        for row in &self.population {
+            if border { write!(term, "{} {}", color::Bg(color::White), termion::style::Reset)?; }
+
+            for s in row {
+                if let Some(_specie) = s {
+                    write!(term, "{}", s.as_ref().unwrap().c())?;
+                } else {
+                    write!(term, " ")?;
+                }
+            }
+            if border { write!(term, "{} {}\n\r", color::Bg(color::White), termion::style::Reset)?; } else { write!(term, "{}\n\r", termion::style::Reset)?; }
+        }
+
+        if border { self.print_border_row(term)?; }
+
+        term.flush()
+    }
+
     fn safe_get(&self, x: i8, y: i8, population: &Vec<Vec<Option<Box<dyn Specie>>>>) -> Option<Box<dyn Specie>> {
         let (ix, iy) = self.safe_position(x, y);
 
@@ -352,30 +376,6 @@ impl Wator {
             y
         };
         (ix, iy)
-    }
-
-    pub fn print<W: Write>(&self, term: &mut W, border: bool) -> io::Result<()> {
-        let (fishes, sharks) = self.count();
-        write!(term, "Fishes: {}  Sharks: {}\n\r", fishes, sharks)?;
-
-        if border { self.print_border_row(term)?; }
-
-        for row in &self.population {
-            if border { write!(term, "{} {}", color::Bg(color::White), termion::style::Reset)?; }
-
-            for s in row {
-                if let Some(_specie) = s {
-                    write!(term, "{}", s.as_ref().unwrap().c())?;
-                } else {
-                    write!(term, " ")?;
-                }
-            }
-            if border { write!(term, "{} {}\n\r", color::Bg(color::White), termion::style::Reset)?; } else { write!(term, "{}\n\r", termion::style::Reset)?; }
-        }
-
-        if border { self.print_border_row(term)?; }
-
-        term.flush()
     }
 
     fn print_border_row<W: Write>(&self, term: &mut W) -> io::Result<()> {
