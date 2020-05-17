@@ -42,6 +42,7 @@ pub struct Arkanoid {
     ball: Ball,
     bar: Point,
     bricks: Vec<Brick>,
+    score: u32
 }
 
 impl Arkanoid {
@@ -71,10 +72,11 @@ impl Arkanoid {
             ball: Ball { x: width as f32 / 2.0, y: height as f32 / 2.0, angle: PI / 4.0 },
             bar: Point::new(width as i8 / 2, height as i8 - 1),
             bricks,
+            score: 0
         }
     }
 
-    pub fn next(&self, delta: f32) -> Option<(Arkanoid, Vec<Brick>)> {
+    pub fn next(&self, delta: f32) -> Option<Arkanoid> {
         let mut ball = self.ball.next(delta);
 
         let mut field_rebound = false;
@@ -115,13 +117,14 @@ impl Arkanoid {
             }
         }
 
-        Some((Arkanoid {
+        Some(Arkanoid {
             width: self.width,
             height: self.height,
             ball,
             bar: self.bar.clone(),
             bricks,
-        }, removed_bricks))
+            score: self.score + removed_bricks.len() as u32 * 100
+        })
     }
 
     pub fn right(&self) -> Arkanoid {
@@ -136,6 +139,7 @@ impl Arkanoid {
                 ball: self.ball.clone(),
                 bar: point,
                 bricks: self.bricks.clone(),
+                score: self.score
             }
         }
     }
@@ -152,6 +156,7 @@ impl Arkanoid {
                 ball: self.ball.clone(),
                 bar: point,
                 bricks: self.bricks.clone(),
+                score: self.score
             }
         }
     }
@@ -174,5 +179,9 @@ impl Arkanoid {
         write!(term, "{}{}*",
                termion::style::Reset,
                termion::cursor::Goto(self.ball.x as u16 + x + 1, self.ball.y as u16 + y + 1))
+    }
+
+    pub fn score(&self) -> u32 {
+        self.score
     }
 }

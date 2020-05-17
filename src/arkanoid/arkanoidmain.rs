@@ -31,7 +31,6 @@ impl<W: Write, R: Read> Main<W, R> for ArkanoidMain<W> {
 
     fn run(&self, stdout: &mut W, stdin: &mut R) -> io::Result<Option<u32>> {
         let mut arkanoid = Arkanoid::new(WIDTH, HEIGHT);
-        let mut score: u32 = 0;
 
         let mut result: io::Result<Option<u32>> = Result::Ok(None);
 
@@ -54,15 +53,14 @@ impl<W: Write, R: Read> Main<W, R> for ArkanoidMain<W> {
                 }
 
                 if key_pressed {
-                    print(stdout, &arkanoid, score)?;
+                    print(stdout, &arkanoid)?;
                 }
 
-                if let Some((ark, removed_bricks)) = arkanoid.next(0.05) {
+                if let Some(ark) = arkanoid.next(0.05) {
                     arkanoid = ark;
-                    score += 100 * removed_bricks.len() as u32;
-                    print(stdout, &arkanoid, score)?;
+                    print(stdout, &arkanoid)?;
                 } else {
-                    result = Result::Ok(Some(score));
+                    result = Result::Ok(Some(arkanoid.score()));
                     break 'outer;
                 }
 
@@ -80,11 +78,11 @@ impl<W: Write, R: Read> Main<W, R> for ArkanoidMain<W> {
     }
 }
 
-fn print<W: Write>(term: &mut W, arkanoid: &Arkanoid, score: u32) -> io::Result<()> {
+fn print<W: Write>(term: &mut W, arkanoid: &Arkanoid) -> io::Result<()> {
     write!(term, "{}{}Score: {}",
            termion::clear::All,
            termion::cursor::Goto(1, 1),
-           score
+           arkanoid.score()
     )?;
     print_border(term, 1, 2, WIDTH as u16 + 2, HEIGHT as u16 + 3)?;
     arkanoid.print(term, 1, 2)?;
