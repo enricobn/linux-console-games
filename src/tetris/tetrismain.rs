@@ -39,11 +39,9 @@ impl <W: Write, R: Read> Main<W,R> for TetrisMain<W,R> {
 
         let mut tetris = Tetris::new(10, 20);
 
-        let mut score: u32 = 0;
-
         let mut result : io::Result<Option<u32>> = Result::Ok(None);
 
-        print(&mut stdout, &mut tetris, score)?;
+        print(&mut stdout, &mut tetris)?;
 
         'outer: loop {
             for _i in 0..40 {
@@ -55,8 +53,7 @@ impl <W: Write, R: Read> Main<W,R> for TetrisMain<W,R> {
                     if let Key::Esc = key {
                         break 'outer;
                     } else if let Char(' ') = key {
-                        let (packed, new_tetris) = tetris.fall()?;
-                        score += packed as u32 * 1000;
+                        let new_tetris= tetris.fall()?;
                         tetris = new_tetris;
                         key_pressed = true;
                     } else if let Key::Left = key {
@@ -75,19 +72,18 @@ impl <W: Write, R: Read> Main<W,R> for TetrisMain<W,R> {
                 }
 
                 if key_pressed {
-                    print(&mut stdout, &mut tetris, score)?;
+                    print(&mut stdout, &mut tetris)?;
                 }
 
                 thread::sleep(Duration::from_millis(10));
             }
 
-            if let Ok(Some((packed, new_tetris))) = tetris.next() {
+            if let Ok(Some(new_tetris)) = tetris.next() {
                 tetris = new_tetris;
 
-                score += packed as u32 * 1000;
-                print(&mut stdout, &mut tetris, score)?;
+                print(&mut stdout, &mut tetris)?;
             } else {
-                result = Ok(Some(score));
+                result = Ok(Some(tetris.score()));
                 break 'outer;
             }
         }
@@ -102,11 +98,11 @@ impl <W: Write, R: Read> Main<W,R> for TetrisMain<W,R> {
     }
 }
 
-fn print<W: Write>(mut stdout: &mut W, tetris: &mut Tetris, score: u32) -> io::Result<()> {
+fn print<W: Write>(mut stdout: &mut W, tetris: &mut Tetris) -> io::Result<()> {
     write!(stdout,
            "{}Score: {}",
            termion::cursor::Goto(1, 3),
-           score)?;
+           tetris.score())?;
     clear_rec(stdout, 25, 5, 10, 5)?;
     tetris.print_next_shape(stdout, 30, 5)?;
     goto(&mut stdout, 1, 4)?;
