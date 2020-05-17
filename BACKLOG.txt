@@ -1,6 +1,5 @@
 Doing
 ------
-- panicking on debug mode
 
 Next
 -----

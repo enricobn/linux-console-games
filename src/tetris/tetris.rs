@@ -199,7 +199,7 @@ impl Tetris {
         let points = self.next_shape.to_points(0, 0);
         write!(term, "{}", color::Bg(self.next_shape.color))?;
         for point in points {
-            write!(term, "{}  ", termion::cursor::Goto((x + point.x as u8 * 2) as u16, (y + point.y as u8) as u16))?;
+            write!(term, "{}  ", termion::cursor::Goto((x as i8 + point.x * 2) as u16, (y as i8 + point.y) as u16))?;
         }
         Result::Ok(())
     }
