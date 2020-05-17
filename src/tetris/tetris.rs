@@ -84,7 +84,7 @@ impl Tetris {
                 current_piece: self.current_piece.clone(),
                 grid: self.current_piece.print(self.grid.clone()),
                 next_shape: self.next_shape.clone(),
-                score: self.score
+                score: self.score,
             }))
         } else if self.state == STATE_NORMAL {
             let grid = self.current_piece.clear(self.grid.clone());
@@ -97,7 +97,7 @@ impl Tetris {
                     current_piece: piece.clone(),
                     grid: new_grid,
                     next_shape: self.next_shape.clone(),
-                    score: self.score + 1000 * packed as u32
+                    score: self.score + 1000 * packed as u32,
                 }.next())? {
                     Result::Ok(Some(tetris))
                 } else {
@@ -109,7 +109,7 @@ impl Tetris {
                     current_piece: piece.clone(),
                     grid: piece.print(grid),
                     next_shape: self.next_shape.clone(),
-                    score: self.score
+                    score: self.score,
                 }))
             }
         } else {
@@ -128,7 +128,7 @@ impl Tetris {
                     current_piece: current_piece.clone(),
                     grid: current_piece.print(self.grid.clone()),
                     next_shape,
-                    score: self.score
+                    score: self.score,
                 }))
             }
         }
@@ -163,7 +163,7 @@ impl Tetris {
                     current_piece: piece.clone(),
                     grid: piece.print(grid),
                     next_shape: self.next_shape.clone(),
-                    score: self.score
+                    score: self.score,
                 })
             }
         } else {
@@ -184,7 +184,7 @@ impl Tetris {
                     current_piece: piece.clone(),
                     grid: new_grid,
                     next_shape: self.next_shape.clone(),
-                    score: self.score + 1000 * packed as u32
+                    score: self.score + 1000 * packed as u32,
                 });
             }
             piece = piece_down;

@@ -1,5 +1,5 @@
 use std::{io, thread};
-use std::io::{Error, Write, Read};
+use std::io::{Error, Read, Write};
 use std::marker::PhantomData;
 use std::time::Duration;
 
@@ -33,7 +33,7 @@ impl<W: Write, R: Read> Main<W, R> for SpaceInvadersMain<W> {
 
         let mut spaceinvaders = SpaceInvaders::new();
 
-        let mut result : io::Result<Option<u32>> = Result::Ok(None);
+        let mut result: io::Result<Option<u32>> = Result::Ok(None);
 
         'outer: loop {
             for _i in 0..20 {
@@ -73,7 +73,7 @@ impl<W: Write, R: Read> Main<W, R> for SpaceInvadersMain<W> {
             }
         }
 
-        while stdin.keys().next().is_some() { }
+        while stdin.keys().next().is_some() {}
 
         result
     }

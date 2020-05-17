@@ -42,7 +42,7 @@ pub struct Arkanoid {
     ball: Ball,
     bar: Point,
     bricks: Vec<Brick>,
-    score: u32
+    score: u32,
 }
 
 impl Arkanoid {
@@ -72,7 +72,7 @@ impl Arkanoid {
             ball: Ball { x: width as f32 / 2.0, y: height as f32 / 2.0, angle: PI / 4.0 },
             bar: Point::new(width as i8 / 2, height as i8 - 1),
             bricks,
-            score: 0
+            score: 0,
         }
     }
 
@@ -123,7 +123,7 @@ impl Arkanoid {
             ball,
             bar: self.bar.clone(),
             bricks,
-            score: self.score + removed_bricks.len() as u32 * 100
+            score: self.score + removed_bricks.len() as u32 * 100,
         })
     }
 
@@ -139,7 +139,7 @@ impl Arkanoid {
                 ball: self.ball.clone(),
                 bar: point,
                 bricks: self.bricks.clone(),
-                score: self.score
+                score: self.score,
             }
         }
     }
@@ -156,7 +156,7 @@ impl Arkanoid {
                 ball: self.ball.clone(),
                 bar: point,
                 bricks: self.bricks.clone(),
-                score: self.score
+                score: self.score,
             }
         }
     }

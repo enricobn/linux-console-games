@@ -13,7 +13,7 @@ const HIGH_SCORES_MAX_SIZE: usize = 10;
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct HighScores {
     path: String,
-    entries: Vec<HighScore>
+    entries: Vec<HighScore>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
@@ -62,11 +62,11 @@ impl HighScores {
             Ok(serialized) => {
                 fs::write(file, serialized).map_err(From::from)
             }
-            Err(e) => Result::Err(Error::new(ErrorKind::Other,e.to_string()))
+            Err(e) => Result::Err(Error::new(ErrorKind::Other, e.to_string()))
         }
     }
 
-    pub fn add(&mut self, score: u32) -> Option<HighScore>{
+    pub fn add(&mut self, score: u32) -> Option<HighScore> {
         let entry = HighScore { score, time: Local::now() };
 
         let e = entry.clone();

@@ -1,7 +1,8 @@
-use std::fmt::{Formatter, Error};
+use std::fmt::{Error, Formatter};
+
 use termion::color;
 
-#[derive(Clone,Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Color {
     Black,
     Red,
@@ -15,7 +16,6 @@ pub enum Color {
 }
 
 impl termion::color::Color for Color {
-
     fn write_fg(&self, f: &mut Formatter) -> Result<(), Error> {
         match self {
             Color::Black => { f.write_str(color::Black.fg_str()) }
@@ -42,6 +42,5 @@ impl termion::color::Color for Color {
             Color::White => { f.write_str(color::White.bg_str()) }
             Color::DefaultColor => { f.write_str(color::Reset.bg_str()) }
         }
-
     }
 }

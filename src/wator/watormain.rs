@@ -1,28 +1,28 @@
 use std::{io, thread};
 use std::io::{Error, Read};
 use std::io::Write;
+use std::marker::PhantomData;
 use std::time::Duration;
 
-use crate::wator::wator::Wator;
-use std::marker::PhantomData;
-use crate::Main;
-use crate::common::persistence::HighScores;
-use termion::input::TermRead;
 use termion::event::Key;
+use termion::input::TermRead;
+
+use crate::common::persistence::HighScores;
+use crate::Main;
+use crate::wator::wator::Wator;
 
 pub struct WatorMain<W: Write, R: Read> {
     _w_marker: PhantomData<W>,
     _r_marker: PhantomData<R>,
 }
 
-impl <W: Write, R: Read> WatorMain<W, R> {
+impl<W: Write, R: Read> WatorMain<W, R> {
     pub fn new() -> WatorMain<W, R> {
         WatorMain { _w_marker: PhantomData, _r_marker: PhantomData }
     }
 }
 
-impl <W: Write, R: Read> Main<W, R> for WatorMain<W, R> {
-
+impl<W: Write, R: Read> Main<W, R> for WatorMain<W, R> {
     fn name(&self) -> &'static str {
         "Wator"
     }
@@ -40,7 +40,7 @@ impl <W: Write, R: Read> Main<W, R> for WatorMain<W, R> {
 
         let mut time: u32 = 0;
 
-        let mut result : io::Result<Option<u32>> = Result::Ok(None);
+        let mut result: io::Result<Option<u32>> = Result::Ok(None);
 
         loop {
             time += 1;
@@ -49,7 +49,7 @@ impl <W: Write, R: Read> Main<W, R> for WatorMain<W, R> {
 
             let b = stdin.keys().next();
             if let Some(Ok(Key::Esc)) = b {
-                break
+                break;
             }
             thread::sleep(Duration::from_millis(50));
             wator = wator.next();
@@ -62,7 +62,7 @@ impl <W: Write, R: Read> Main<W, R> for WatorMain<W, R> {
             }
         }
 
-        while stdin.keys().next().is_some() { }
+        while stdin.keys().next().is_some() {}
 
         result
     }
@@ -70,7 +70,6 @@ impl <W: Write, R: Read> Main<W, R> for WatorMain<W, R> {
     fn high_scores(&self) -> Result<HighScores, Error> {
         HighScores::read(".wator")
     }
-
 }
 
 fn print<W: Write>(mut stdout: &mut W, wator: &Wator) -> io::Result<()> {

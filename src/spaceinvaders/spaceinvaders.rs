@@ -87,19 +87,25 @@ impl SpaceInvaders {
         };
 
         if enemies.iter().any(|enemy| enemy.y >= HEIGHT as f32) {
-            return None
+            return None;
         }
 
         let position = Pointf32::new(self.x as f32, HEIGHT as f32);
 
         if enemy_bullets.iter().any(|bullet| SpaceInvaders::collides(bullet, &position)) {
-            return None
+            return None;
         }
 
         let score = self.score + (1000 * (self.enemies.len() - enemies.len())) as u32;
 
-        Some(SpaceInvaders { x: self.x, enemies, bullets, enemy_bullets, enemy_velocity: enemy_direction * 1.005,
-            score })
+        Some(SpaceInvaders {
+            x: self.x,
+            enemies,
+            bullets,
+            enemy_bullets,
+            enemy_velocity: enemy_direction * 1.005,
+            score,
+        })
     }
 
     pub fn right(&self) -> SpaceInvaders {

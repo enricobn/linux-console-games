@@ -1,5 +1,5 @@
 use std::{io, thread};
-use std::io::{Error, Write, Read};
+use std::io::{Error, Read, Write};
 use std::marker::PhantomData;
 use std::time::Duration;
 

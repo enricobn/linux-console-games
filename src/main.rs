@@ -59,12 +59,12 @@ fn main() {
     attempt! {{
         run(&mut stdout, &mut stdin);
     } catch(e) {
-        reset_status(&mut stdout);
+        reset_status(&mut stdout).unwrap();
 
         println!("Failed to run: {}", e);
     }};
 
-    reset_status(&mut stdout);
+    reset_status(&mut stdout).unwrap();
 }
 
 fn reset_status<W: 'static>(stdout: &mut W) -> io::Result<()> where W: Write {
@@ -78,11 +78,14 @@ fn reset_status<W: 'static>(stdout: &mut W) -> io::Result<()> where W: Write {
 fn run<W: 'static, R: 'static>(stdout: &mut W, stdin: &mut R) -> io::Result<()> where W: Write, R: Read {
     loop {
         write!(stdout,
-               "{}{}{}{}Console games{}\r\n\r\nPress Esc to exit",
+               "{}{}{}{}{}Console games{}\r\n\r\nPress {}Esc{} to exit",
                termion::cursor::Hide,
                termion::clear::All,
                termion::cursor::Goto(1, 1),
-               color::Bg(color::Red),
+               color::Fg(color::LightWhite),
+               color::Bg(color::Green),
+               termion::style::Reset,
+               color::Fg(color::LightWhite),
                termion::style::Reset).unwrap();
 
         let mains: Vec<Box<dyn Main<W, R>>> =
@@ -113,8 +116,10 @@ fn run_main<W, R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W, R>>) -> i
     print_scores(stdout, scores, None)?;
 
     write!(stdout,
-           "{}Press 'p' to play.",
-           termion::cursor::Goto(1, 20))?;
+           "{}Press {}p{} to play.",
+           termion::cursor::Goto(1, 20),
+           color::Fg(color::LightWhite),
+           termion::style::Reset)?;
 
     stdout.flush()?;
 
@@ -133,9 +138,13 @@ fn run_main<W, R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W, R>>) -> i
             print_scores(stdout, scores, added.map(|score| score.time()))?;
 
             write!(stdout,
-                   "{}Game over! \n\rScore: {}\n\r\n\rPress 'p' to play again, Esc exit to return to menu.",
+                   "{}Game over! \n\rScore: {}\n\r\n\rPress {}p{} to play again, {}Esc{} exit to return to menu.",
                    termion::cursor::Goto(1, 15),
-                   score)?;
+                   score,
+                   color::Fg(color::LightWhite),
+                   termion::style::Reset,
+                   color::Fg(color::LightWhite),
+                   termion::style::Reset)?;
 
             stdout.flush()?;
 
@@ -158,14 +167,16 @@ fn run_main<W, R>(stdout: &mut W, stdin: &mut R, main: Box<dyn Main<W, R>>) -> i
     }
 
     Ok(())
-
 }
 
 fn print_scores<W: Write>(stdout: &mut W, scores: HighScores, highlight: Option<DateTime<Local>>) -> io::Result<()> {
     write!(stdout,
-           "{}{}High scores",
+           "{}{}{}{}High scores{}",
            termion::clear::All,
-           termion::cursor::Goto(10, 1))?;
+           termion::cursor::Goto(10, 1),
+           color::Fg(color::LightWhite),
+           color::Bg(color::Green),
+           termion::style::Reset)?;
 
     let mut y = 3;
     for score in scores.entries().iter() {

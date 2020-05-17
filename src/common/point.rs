@@ -33,7 +33,6 @@ impl Point {
             Direction::West => self.left()
         }
     }
-
 }
 
 #[derive(Clone, Debug)]
@@ -71,7 +70,6 @@ impl Pointf32 {
             Direction::West => self.left()
         }
     }
-
 }
 
 #[derive(Clone, Debug)]

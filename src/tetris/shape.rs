@@ -1,8 +1,8 @@
 use std::f32::consts::PI;
 
-use crate::common::point::Point;
 use crate::common::consolecolor::Color;
 use crate::common::grid::Grid;
+use crate::common::point::Point;
 
 #[derive(Clone)]
 pub struct Shape {
@@ -92,7 +92,7 @@ impl Shape {
 
     pub fn to_points(&self, x: i8, y: i8) -> Vec<Point> {
         self.points.to_vec().into_iter()
-            .map(|point| Point {x: x + point.x, y: y + point.y}).collect()
+            .map(|point| Point { x: x + point.x, y: y + point.y }).collect()
     }
 
     fn rotate_by_angle(&self, ang: f32) -> Shape {

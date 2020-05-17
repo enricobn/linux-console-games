@@ -1,5 +1,6 @@
 use std::{io, thread};
-use std::io::{Write, Error, Read};
+use std::io::{Error, Read, Write};
+use std::marker::PhantomData;
 use std::time::Duration;
 
 use termion::event::Key;
@@ -7,23 +8,21 @@ use termion::event::Key::Char;
 use termion::input::TermRead;
 
 use crate::common::persistence::HighScores;
-use crate::tetris::tetris::Tetris;
 use crate::Main;
-use std::marker::PhantomData;
+use crate::tetris::tetris::Tetris;
 
 pub struct TetrisMain<W: Write, R: Read> {
     _w_marker: PhantomData<W>,
     _r_marker: PhantomData<R>,
 }
 
-impl <W: Write, R: Read> TetrisMain<W, R> {
+impl<W: Write, R: Read> TetrisMain<W, R> {
     pub fn new() -> TetrisMain<W, R> {
         TetrisMain { _w_marker: PhantomData, _r_marker: PhantomData }
     }
 }
 
-impl <W: Write, R: Read> Main<W,R> for TetrisMain<W,R> {
-
+impl<W: Write, R: Read> Main<W, R> for TetrisMain<W, R> {
     fn name(&self) -> &'static str {
         "Tetris"
     }
@@ -39,7 +38,7 @@ impl <W: Write, R: Read> Main<W,R> for TetrisMain<W,R> {
 
         let mut tetris = Tetris::new(10, 20);
 
-        let mut result : io::Result<Option<u32>> = Result::Ok(None);
+        let mut result: io::Result<Option<u32>> = Result::Ok(None);
 
         print(&mut stdout, &mut tetris)?;
 
@@ -53,7 +52,7 @@ impl <W: Write, R: Read> Main<W,R> for TetrisMain<W,R> {
                     if let Key::Esc = key {
                         break 'outer;
                     } else if let Char(' ') = key {
-                        let new_tetris= tetris.fall()?;
+                        let new_tetris = tetris.fall()?;
                         tetris = new_tetris;
                         key_pressed = true;
                     } else if let Key::Left = key {
@@ -88,7 +87,7 @@ impl <W: Write, R: Read> Main<W,R> for TetrisMain<W,R> {
             }
         }
 
-        while stdin.keys().next().is_some() { }
+        while stdin.keys().next().is_some() {}
 
         result
     }

@@ -1,15 +1,15 @@
 use std::{io, thread};
-use termion::color;
-use std::io::{Write, Read};
-use termion::event::Key;
-use termion::input::TermRead;
+use std::io::{Read, Write};
 use std::time::Duration;
 
+use termion::color;
+use termion::event::Key;
+use termion::input::TermRead;
+
 pub fn choose<W: Write, R: Read>(stdout: &mut W, stdin: &mut R, menu: &Vec<&str>, x: u16, y: u16) -> io::Result<Option<u8>> {
-    let mut index : i8 = 0;
+    let mut index: i8 = 0;
 
     'outer: loop {
-
         for i in 0..menu.len() {
             write!(stdout,
                    "{}",
@@ -18,7 +18,7 @@ pub fn choose<W: Write, R: Read>(stdout: &mut W, stdin: &mut R, menu: &Vec<&str>
             let menu_item = menu[i];
 
             if index == i as i8 {
-                write!(stdout, "{} ", color::Bg(color::Cyan))?;
+                write!(stdout, "{}{} ", color::Bg(color::Cyan), color::Fg(color::LightWhite))?;
             } else {
                 write!(stdout, "{} ", termion::style::Reset)?;
             }
@@ -60,5 +60,4 @@ pub fn choose<W: Write, R: Read>(stdout: &mut W, stdin: &mut R, menu: &Vec<&str>
     }
 
     Result::Ok(Some(index as u8))
-
 }
