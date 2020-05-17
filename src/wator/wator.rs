@@ -1,7 +1,9 @@
-use rand::Rng;
 use std::io;
 use std::io::Write;
+
+use rand::Rng;
 use termion::color;
+
 use crate::common::point::Direction;
 
 trait Specie {
@@ -209,6 +211,7 @@ pub struct Wator {
     width: u8,
     height: u8,
     population: Vec<Vec<Option<Box<dyn Specie>>>>,
+    time: u32,
 }
 
 impl Wator {
@@ -246,7 +249,7 @@ impl Wator {
             }
         }
 
-        Wator { width, height, population }
+        Wator { width, height, population, time: 0 }
     }
 
     pub fn next(&self) -> Wator {
@@ -299,7 +302,7 @@ impl Wator {
             }
         }
 
-        Wator { width: self.width, height: self.height, population }
+        Wator { width: self.width, height: self.height, population, time: self.time + 1 }
     }
 
     pub fn count(&self) -> (u16, u16) {
@@ -322,7 +325,7 @@ impl Wator {
 
     pub fn print<W: Write>(&self, term: &mut W, border: bool) -> io::Result<()> {
         let (fishes, sharks) = self.count();
-        write!(term, "Fishes: {}  Sharks: {}\n\r", fishes, sharks)?;
+        write!(term, "Time: {}  Fishes: {}  Sharks: {}\n\r", self.time, fishes, sharks)?;
 
         if border { self.print_border_row(term)?; }
 

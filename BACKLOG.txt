@@ -1,7 +1,6 @@
 Doing
 ------
 - panicking on debug mode
-- move score and all logic outside Main implementation
 
 Next
 -----
