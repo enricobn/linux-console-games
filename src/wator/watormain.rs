@@ -24,7 +24,7 @@ impl<W: Write, R: Read> WatorMain<W, R> {
 
 impl<W: Write, R: Read> Main<W, R> for WatorMain<W, R> {
     fn name(&self) -> &'static str {
-        "Wator"
+        "Wa-tor"
     }
 
     fn run(&self, mut stdout: &mut W, stdin: &mut R) -> io::Result<Option<u32>> {

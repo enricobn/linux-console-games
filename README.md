@@ -1,6 +1,12 @@
 ## Linux console games in Rust
 
-* Tetris
-* Wator
-* Snake
+Grames:
+
 * Arkanoid
+* Snake
+* Spaceinvaders
+* Tetris
+* Wa-tor
+
+To run from sources:
+cargo run --release

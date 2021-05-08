@@ -89,11 +89,12 @@ fn run<W: 'static, R: 'static>(stdout: &mut W, stdin: &mut R) -> io::Result<()> 
                termion::style::Reset).unwrap();
 
         let mains: Vec<Box<dyn Main<W, R>>> =
-            vec!(Box::new(TetrisMain::new()),
-                 Box::new(SnakeMain::new()),
-                 Box::new(WatorMain::new()),
-                 Box::new(ArkanoidMain::new()),
-                 Box::new(SpaceInvadersMain::new())
+            vec!(
+                Box::new(ArkanoidMain::new()),
+                Box::new(SnakeMain::new()),
+                Box::new(SpaceInvadersMain::new()),
+                Box::new(TetrisMain::new()),
+                Box::new(WatorMain::new())
             );
 
         let menu = mains.iter().map(|main| main.name()).collect();
